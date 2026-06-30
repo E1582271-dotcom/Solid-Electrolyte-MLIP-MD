@@ -1,0 +1,56 @@
+{
+  "source": "Materials Project mp-985592 (Li6PS5Cl, F-43m, ordered DFT approximant)",
+  "supercell": [
+    1,
+    1,
+    1
+  ],
+  "expt_a_angstrom": 9.859,
+  "note": "S/Cl free-anion disorder reconstructed from the ordered cell and Ewald-enumerated; MP/PBE lattice ~4% larger than experiment.",
+  "configs": [
+    {
+      "config": 0,
+      "ewald_rank": 0,
+      "ewald_energy": -1010.681,
+      "cif": "config0.cif",
+      "formula": "Li6PS5Cl",
+      "n_atoms": 52,
+      "n_Li": 24,
+      "abc": [
+        10.2795,
+        10.2795,
+        10.2795
+      ],
+      "angles": [
+        90.0,
+        90.0,
+        90.0
+      ],
+      "volume": 1086.21,
+      "density_g_cm3": 1.6412,
+      "a_vs_expt_pct": 4.27
+    },
+    {
+      "config": 1,
+      "ewald_rank": 1,
+      "ewald_energy": -1000.657,
+      "cif": "config1.cif",
+      "formula": "Li6PS5Cl",
+      "n_atoms": 52,
+      "n_Li": 24,
+      "abc": [
+        10.2795,
+        10.2795,
+        10.2795
+      ],
+      "angles": [
+        90.0,
+        90.0,
+        90.0
+      ],
+      "volume": 1086.21,
+      "density_g_cm3": 1.6412,
+      "a_vs_expt_pct": 4.27
+    }
+  ]
+}

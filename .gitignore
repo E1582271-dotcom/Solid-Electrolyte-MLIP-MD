@@ -1,0 +1,22 @@
+# secrets
+mp_api_key.txt
+*.key
+
+# large MD trajectories — regenerate on GPU (02_baseline_md.py)
+data/traj/
+
+# MLIP model-weight caches downloaded at runtime
+*.model
+*.pth
+checkpoints/
+
+# kept (small, reproducible, attributed to MP mp-985592):
+#   data/Li6PS5Cl_mp-985592.cif, data/config*.cif, data/structures.json
+
+# python / notebooks / os
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
