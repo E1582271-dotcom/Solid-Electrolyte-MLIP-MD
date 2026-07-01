@@ -1,24 +1,25 @@
 #!/bin/bash
-# W7 step 2 — DFT-label Li6PS5Cl snapshots with Quantum ESPRESSO on Atlas CPU (Project 2).
-# Personal free budget -> no -P. DO labelling on CPU (A40 is poor at FP64/DFT).
+# W7 step 2 — DFT-label Li6PS5Cl snapshots with Quantum ESPRESSO on VANDA CPU (Project 2).
+# Vanda PERSONAL FREE budget -> no -P (10k CPUhr/yr, plenty for ~100-300 single-points).
+# CPU partition only — NEVER on the A40 (its FP64 is 1:64, useless for DFT). Same cluster as the MD.
 #
-# LOGIN-NODE PREREQS (compute nodes are OFFLINE — do these first):
+# LOGIN-NODE PREREQS (Vanda login: NUS-id@vanda.nus.edu.sg + NUS password; compute nodes OFFLINE):
 #   bash finetune/00_fetch_pseudos.sh          # SSSP PBE UPFs -> finetune/pseudo/
+#   module avail 2>&1 | grep -i espresso       # <- note the real QE module name (pass via QE_MODULE=)
 #   bash finetune/setup_qe_env.sh              # ase -> ~/asepkg
-#   VERIFY the QE module name:  module avail 2>&1 | grep -i espresso   (pass via QE_MODULE=)
 #
 # Submit from ~/AI4SSB/project2_mlip_md:
-#   qsub -v NCPUS=16,QE_MODULE=quantum-espresso label_qe.pbs
+#   qsub -v NCPUS=36,QE_MODULE=<name> finetune/label_qe.pbs
 # Resumable: the driver skips already-labelled configs, so just re-qsub to continue a long set.
-#   convergence first:  qsub -v NCPUS=16,PWARGS='--limit 1 --ecutwfc 50 --kpts 2,2,2' label_qe.pbs
+#   convergence first:  qsub -v NCPUS=36,PWARGS='--limit 1 --ecutwfc 60 --kpts 2,2,2' finetune/label_qe.pbs
 #PBS -N li6_qe_label
-#PBS -l select=1:ncpus=16:mpiprocs=16
+#PBS -l select=1:ncpus=36:mpiprocs=36:mem=250gb
 #PBS -l walltime=24:00:00
 #PBS -j oe
 
 cd "$PBS_O_WORKDIR"
-NCPUS="${NCPUS:-16}"
-QE_MODULE="${QE_MODULE:-quantum-espresso}"   # <-- adjust to Atlas' actual name (e.g. qe/7.2)
+NCPUS="${NCPUS:-36}"
+QE_MODULE="${QE_MODULE:-QuantumESPRESSO}"   # <-- verify on Vanda (module avail 2>&1 | grep -i espresso)
 echo "[pbs] host=$(hostname) start=$(date) ncpus=$NCPUS module=$QE_MODULE"
 
 module load "$QE_MODULE" || { echo "[pbs] bad QE_MODULE; run: module avail 2>&1 | grep -i espresso"; exit 1; }

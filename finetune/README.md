@@ -37,27 +37,28 @@ carries MACE energies/forces as **placeholders** — step 2 overwrites them with
 - `00_fetch_pseudos.sh` — **login node**: fetch SSSP-efficiency PBE UPFs → `pseudo/` (auto-discovered).
 - `setup_qe_env.sh` — **login node**: install `ase` into `~/asepkg` for the driver.
 - `11_label_qe.py` — QE SCF per snapshot → `data/labelled.xyz` (resumable; per-config failures logged).
-- `label_qe.pbs` — Atlas CPU job wrapping the driver (`mpirun pw.x`, verify `QE_MODULE`).
+- `label_qe.pbs` — Vanda CPU job wrapping the driver (`mpirun pw.x`, no `-P`, verify `QE_MODULE`).
 - `12_split_train_valid.py` — `labelled.xyz` → `train.xyz` + `valid.xyz`.
 - `qe_scf_template.in` — reference spec of the SCF namelists (executable version = `11_label_qe.py`).
 - `20_finetune_mace.sh` — `mace_run_train` fine-tune (foundation = MACE-MP small; reads `dft_*` keys).
 
-## Concrete run order (W7 step 2→4)
+## Concrete run order (W7 step 2→4) — all on **Vanda** (personal free budget, no `-P`)
 ```bash
-# --- Atlas LOGIN node (compute nodes are offline) ---
+# --- Vanda LOGIN node (NUS-id@vanda.nus.edu.sg; compute nodes are offline) ---
 bash finetune/00_fetch_pseudos.sh          # or SSSP_TAR_URL=... bash 00_fetch_pseudos.sh
 bash finetune/setup_qe_env.sh
 module avail 2>&1 | grep -i espresso       # <- note the real QE module name
 
 # --- CONVERGE first (one snapshot; bump ecutwfc 50→60→70, kpts 2,2,2→3,3,3) ---
-qsub -v NCPUS=16,QE_MODULE=<name>,PWARGS='--limit 1 --ecutwfc 60 --kpts 2,2,2' finetune/label_qe.pbs
+qsub -v NCPUS=36,QE_MODULE=<name>,PWARGS='--limit 1 --ecutwfc 60 --kpts 2,2,2' finetune/label_qe.pbs
 
-# --- Mass label (resumable: re-qsub to continue past the walltime) ---
-qsub -v NCPUS=16,QE_MODULE=<name> finetune/label_qe.pbs
+# --- Mass label on Vanda CPU (resumable: re-qsub to continue past the walltime) ---
+qsub -v NCPUS=36,QE_MODULE=<name> finetune/label_qe.pbs
 
 # --- Split, then fine-tune on the A40 (container, PYTHONUSERBASE=~/macepkg) ---
 python finetune/12_split_train_valid.py
-qsub ... 20_finetune_mace.sh               # then step 5: re-run 02/03 with models/li6ps5cl_ft.model
+qsub 20_finetune_mace.sh                    # then step 5: re-run 02/03 with models/li6ps5cl_ft.model
 ```
-Pseudopotentials: SSSP **efficiency PBE** for Li P S Cl (`pseudo/`, gitignored). A 52-atom Γ-ish
-SCF is minutes–hours on CPU → fits Atlas free CPU.
+Everything lives on **Vanda**: DFT labelling on the CPU partition (personal free 10k CPUhr/yr),
+fine-tune + MD on the A40 (personal free 1k GPUhr/yr). Pseudopotentials: SSSP **efficiency PBE**
+for Li P S Cl (`pseudo/`, gitignored). A 52-atom Γ-ish SCF is minutes–hours on 36 CPU cores.

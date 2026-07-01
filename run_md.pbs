@@ -1,10 +1,17 @@
 #!/bin/bash
-# Baseline Li6PS5Cl MLIP-MD on Vanda A40 (Project 2, W6). Personal free budget -> no -P.
-# Submit from ~/AI4SSB/project2_mlip_md, e.g.:
+# Li6PS5Cl MLIP-MD on Vanda A40 (Project 2). Vanda PERSONAL FREE budget -> no -P (10k CPUhr +
+# 1k GPUhr/yr auto per user). A40 is FP32-only; FP64/DFT belongs on Atlas (see label_qe.pbs).
+# Submit from ~/AI4SSB/project2_mlip_md. TEMPS uses '_' as separator (qsub -v reserves ','):
 #   smoke : qsub -v MLIP=mace,TEMPS=800,STEPS=2000,EQUILIB=500,LOG_EVERY=20 run_md.pbs
-#   full  : qsub -v MLIP=mace,TEMPS="600,800,1000",STEPS=50000,EQUILIB=5000 run_md.pbs
+#   full  : qsub -v MLIP=mace,TEMPS=600_800_1000,STEPS=50000,EQUILIB=5000 run_md.pbs
+#   W8 production (416-atom 2x2x2, ~200 ps) -- data/config0_sc222.cif is already committed;
+#   ONE JOB PER TEMP so they run concurrently (Vanda personal budget = up to 4 concurrent GPU jobs):
+#     for T in 600 800 1000; do
+#       qsub -l walltime=48:00:00 -v MLIP=mace,TEMPS=$T,STEPS=200000,EQUILIB=10000,SUPERCELL_TAG=_sc222,TRAJ_TAG=_prod run_md.pbs
+#     done
+#   W7 eval (fine-tuned model): add MACE_MODEL=finetune/models/li6ps5cl_ft.model,TRAJ_TAG=_ft
 #PBS -N li6_md
-#PBS -l select=1:ngpus=1
+#PBS -l select=1:ngpus=1:ncpus=36:mem=240gb
 #PBS -l walltime=04:00:00
 #PBS -j oe
 
@@ -23,6 +30,8 @@ export SINGULARITYENV_EQUILIB="${EQUILIB:-500}"
 export SINGULARITYENV_LOG_EVERY="${LOG_EVERY:-50}"
 export SINGULARITYENV_PKGBASE="${PKGBASE:-macepkg}"
 export SINGULARITYENV_TRAJ_TAG="${TRAJ_TAG:-}"
+export SINGULARITYENV_SUPERCELL_TAG="${SUPERCELL_TAG:-}"   # e.g. _sc222 for the W8 416-atom cell
+export SINGULARITYENV_MACE_MODEL="${MACE_MODEL:-small}"    # or finetune/models/li6ps5cl_ft.model (W7)
 
 # NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
 singularity exec "$IMG" bash run_in_container.sh
