@@ -80,26 +80,38 @@ def main():
                     help="pw.x invocation; PBS sets $QE_PW_CMD='mpirun -np N pw.x'")
     ap.add_argument("--ecutwfc", type=float, default=60.0, help="Ry (fallback if no sssp.json)")
     ap.add_argument("--ecutrho", type=float, default=480.0, help="Ry (fallback if no sssp.json)")
-    ap.add_argument("--kpts", default="2,2,2", help="Monkhorst-Pack mesh; CONVERGE this")
+    ap.add_argument("--kpts", default="2,2,2",
+                    help="Monkhorst-Pack mesh (e.g. 2,2,2); or 'gamma' for a single Gamma point "
+                         "with REAL wavefunctions (~16x cheaper than 2,2,2; enough for delta-fit "
+                         "labels on top of MACE-MP-0). CONVERGE this on one snapshot first.")
     ap.add_argument("--degauss", type=float, default=0.01)
     ap.add_argument("--conv-thr", type=float, default=1.0e-8)
     ap.add_argument("--workdir", default=os.path.join(HERE, "qe_work"))
-    ap.add_argument("--limit", type=int, default=0, help="label only first N (0=all); for convergence")
+    ap.add_argument("--limit", type=int, default=0, help="process only N configs from --start (0=all)")
+    ap.add_argument("--start", type=int, default=0,
+                    help="first config index to process; shard the set across jobs with "
+                         "disjoint --start/--limit (give each its own --workdir and --out)")
     args = ap.parse_args()
 
     from ase.io import read, write
     from ase.io.espresso import write_espresso_in, read_espresso_out
 
     frames = read(args.snapshots, index=":")
-    if args.limit:
-        frames = frames[:args.limit]
+    start = max(0, args.start)
+    end = min(start + args.limit, len(frames)) if args.limit else len(frames)
     pp = discover_pseudos(args.pseudo_dir)
     ecutwfc, ecutrho, src = cutoffs_from_sssp(args.pseudo_dir, args.ecutwfc, args.ecutrho)
-    kpts = tuple(int(x) for x in args.kpts.split(","))
-    print(f"[11] {len(frames)} snapshots | pseudos {pp} | ecutwfc={ecutwfc} ecutrho={ecutrho} "
-          f"({src}) | kpts={kpts} | pw='{args.pw_cmd}'")
+    # kpts=None -> ASE writes 'K_POINTS gamma' (real wavefunctions, ~2x faster + half memory than
+    # an automatic 1,1,1 mesh, and 8x fewer k-points than 2,2,2). npool MUST be 1 for a single point.
+    if args.kpts.strip().lower() in ("gamma", "g"):
+        kpts, kpts_desc = None, "gamma (real WF)"
+    else:
+        kpts = tuple(int(x) for x in args.kpts.split(","))
+        kpts_desc = str(kpts)
+    print(f"[11] {len(frames)} snapshots | shard [{start},{end}) | pseudos {pp} | "
+          f"ecutwfc={ecutwfc} ecutrho={ecutrho} ({src}) | kpts={kpts_desc} | pw='{args.pw_cmd}'")
 
-    # resume: labelled.xyz is written in input order, so skip the count already present
+    # resume: this shard's out holds configs start, start+1, ...; skip the count already present
     done = 0
     if os.path.exists(args.out):
         done = len(read(args.out, index=":"))
@@ -119,7 +131,9 @@ def main():
     logf = open(os.path.join(HERE, "labelling.log"), "a")
     ok = fail = 0
     for i, atoms in enumerate(frames):
-        if i < done:
+        if i < start or i >= end:
+            continue
+        if i < start + done:          # already labelled in a previous run of this shard
             continue
         atoms.calc = None
         for k in _STALE_INFO:

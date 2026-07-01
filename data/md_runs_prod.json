@@ -1,0 +1,22 @@
+{
+  "baseline": true,
+  "fine_tuned": false,
+  "runs": [
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 600.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "mean_T": 601.3,
+      "std_T": 23.5,
+      "mean_E_per_atom": -4.068,
+      "drift_meV_atom_ps": 0.007,
+      "wall_seconds": 8706.0,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mace_600K.traj"
+    }
+  ]
+}

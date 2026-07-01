@@ -3,30 +3,34 @@
 # Vanda PERSONAL FREE budget -> no -P (10k CPUhr/yr, plenty for ~100-300 single-points).
 # CPU partition only — NEVER on the A40 (its FP64 is 1:64, useless for DFT). Same cluster as the MD.
 #
-# LOGIN-NODE PREREQS (Vanda login: NUS-id@vanda.nus.edu.sg + NUS password; compute nodes OFFLINE):
-#   bash finetune/00_fetch_pseudos.sh          # SSSP PBE UPFs -> finetune/pseudo/
-#   module avail 2>&1 | grep -i espresso       # <- note the real QE module name (pass via QE_MODULE=)
-#   bash finetune/setup_qe_env.sh              # ase -> ~/asepkg
+# PREREQS: pseudos in finetune/pseudo/ (GBRV all-PBE UPF for Li P S Cl, or SSSP via 00_fetch_pseudos.sh).
+# QE (pw.x) + ase both come from EasyBuild modules on the SAME toolchain -> NO pip / no ~/asepkg.
 #
 # Submit from ~/AI4SSB/project2_mlip_md:
-#   qsub -v NCPUS=36,QE_MODULE=<name> finetune/label_qe.pbs
+#   qsub finetune/label_qe.pbs        # defaults: 36 cores, QuantumESPRESSO/7.1-foss-2022a + ASE/3.22.1-foss-2022a
 # Resumable: the driver skips already-labelled configs, so just re-qsub to continue a long set.
-#   convergence first:  qsub -v NCPUS=36,PWARGS='--limit 1 --ecutwfc 60 --kpts 2,2,2' finetune/label_qe.pbs
+#   convergence first:  qsub -v PWARGS='--limit 1 --ecutwfc 60 --kpts 2,2,2' finetune/label_qe.pbs
 #PBS -N li6_qe_label
-#PBS -l select=1:ncpus=36:mpiprocs=36:mem=250gb
+#PBS -l select=1:ncpus=36:mpiprocs=36:mem=64gb:switch=cpu_all
 #PBS -l walltime=24:00:00
 #PBS -j oe
 
 cd "$PBS_O_WORKDIR"
 NCPUS="${NCPUS:-36}"
-QE_MODULE="${QE_MODULE:-QuantumESPRESSO}"   # <-- verify on Vanda (module avail 2>&1 | grep -i espresso)
-echo "[pbs] host=$(hostname) start=$(date) ncpus=$NCPUS module=$QE_MODULE"
+# Intel-MPI QE build: its Hydra launcher tolerates Vanda's hostname case mismatch (CN-011 vs
+# cn-011.stdct.loc) that makes foss/OpenMPI spawn a phantom remote daemon and die (exit 205).
+QE_MODULE="${QE_MODULE:-QuantumESPRESSO/7.1-intel-2022a}"   # pw.x + Intel MPI mpirun
+echo "[pbs] host=$(hostname) start=$(date) ncpus=$NCPUS QE=$QE_MODULE"
 
-module load "$QE_MODULE" || { echo "[pbs] bad QE_MODULE; run: module avail 2>&1 | grep -i espresso"; exit 1; }
-command -v pw.x >/dev/null || { echo "[pbs] pw.x not on PATH after 'module load $QE_MODULE'"; exit 1; }
+module load "$QE_MODULE" || { echo "[pbs] module load failed; module avail 2>&1 | grep -i espresso"; exit 1; }
+command -v pw.x >/dev/null || { echo "[pbs] pw.x not on PATH"; exit 1; }
+# ase for the driver: system python3 + pip-installed ase in ~/.local (ASE module conflicts with QE/intel)
+python3 -c "import ase.io.espresso" || { echo "[pbs] ase missing -> on login: module load $QE_MODULE; python3 -m pip install --user ase"; exit 1; }
 
-export PYTHONUSERBASE="$HOME/asepkg"          # ase from setup_qe_env.sh
-export QE_PW_CMD="mpirun -np $NCPUS pw.x"
+# -npool splits the 8 k-points into pools so we don't over-divide a 52-atom cell across all R&G
+# ranks (npool=1 with 36 ranks hangs). NPOOL should divide NCPUS and be <= n_kpoints (8).
+NPOOL="${NPOOL:-4}"
+export QE_PW_CMD="mpirun -np $NCPUS pw.x -npool $NPOOL"
 
 cd finetune
 python3 11_label_qe.py --pseudo-dir pseudo --snapshots data/snapshots.xyz \

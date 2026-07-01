@@ -7,23 +7,31 @@
 # The --foundation_model flag turns this into FINE-TUNING (not from scratch): MACE-MP small
 # is loaded and adapted to the sulfide data with a small LR.
 set -e
-export PYTHONUSERBASE="$HOME/macepkg"
-export PYTHONPATH="$HOME/macepkg/lib/python3.10/site-packages:$PYTHONPATH"
+PKGBASE="${PKGBASE:-macepkg}"
+export PYTHONUSERBASE="$HOME/$PKGBASE"
+export PYTHONPATH="$HOME/$PKGBASE/lib/python3.10/site-packages:$PYTHONPATH"
 cd "$HOME/AI4SSB/project2_mlip_md/finetune"
+
+# --foundation_model: 'small' downloads MACE-MP-0 (needs internet on the compute node). If a
+# local cached .model is staged (offline nodes), point FOUNDATION at it via env, e.g.
+#   FOUNDATION=$HOME/.cache/mace/<hash>.model
+FOUNDATION="${FOUNDATION:-small}"
+echo "[ft] foundation=$FOUNDATION epochs=${EPOCHS:-120} fweight=${FWEIGHT:-10} lr=${LR:-0.0001} batch=${BATCH:-4}"
 
 python3 -m mace.cli.run_train \
     --name="li6ps5cl_ft" \
-    --foundation_model="small" \
+    --foundation_model="$FOUNDATION" \
     --train_file="data/train.xyz" \
     --valid_file="data/valid.xyz" \
     --energy_key="dft_energy" \
     --forces_key="dft_forces" \
+    --E0s="average" \
     --loss="weighted" \
     --energy_weight=1.0 \
-    --forces_weight=10.0 \
-    --lr=0.0001 \
-    --batch_size=4 \
-    --max_num_epochs=120 \
+    --forces_weight="${FWEIGHT:-10}" \
+    --lr="${LR:-0.0001}" \
+    --batch_size="${BATCH:-4}" \
+    --max_num_epochs="${EPOCHS:-120}" \
     --swa \
     --default_dtype="float32" \
     --device="cuda" \

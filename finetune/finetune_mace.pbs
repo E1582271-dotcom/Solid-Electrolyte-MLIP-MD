@@ -1,0 +1,32 @@
+#!/bin/bash
+# W7 step 4 — fine-tune MACE-MP-0 (small) on the DFT-labelled Li6PS5Cl snapshots, on Vanda A40.
+# Mirrors run_md.pbs: same pytorch_2.5 container, mace_run_train ships in ~/macepkg (py3.10/torch2.5).
+# Vanda PERSONAL FREE budget -> no -P. A40 FP32 is fine for training (default_dtype=float32).
+#
+# PREREQ: finetune/data/train.xyz + valid.xyz (from 11_label_qe.py shards -> cat -> 12_split).
+# Submit from ~/AI4SSB/project2_mlip_md:
+#   qsub finetune/finetune_mace.pbs
+# Override epochs/LR via env, e.g.:  qsub -v EPOCHS=200,FWEIGHT=25 finetune/finetune_mace.pbs
+#PBS -N li6_ft
+#PBS -l select=1:ngpus=1:ncpus=36:mem=240gb
+#PBS -l walltime=06:00:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR"
+echo "[pbs] host=$(hostname) start=$(date)"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || true
+
+module load singularity
+IMG=/app1/common/singularity-img/vanda/pytorch_2.5_cuda_12.4_unsloth.sif
+
+# pass optional training knobs through to the container (20_finetune_mace.sh reads them)
+export SINGULARITYENV_PKGBASE="${PKGBASE:-macepkg}"
+export SINGULARITYENV_EPOCHS="${EPOCHS:-120}"
+export SINGULARITYENV_FWEIGHT="${FWEIGHT:-10}"
+export SINGULARITYENV_LR="${LR:-0.0001}"
+export SINGULARITYENV_BATCH="${BATCH:-4}"
+export SINGULARITYENV_FOUNDATION="${FOUNDATION:-small}"   # or a staged local .model for offline nodes
+
+# NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
+singularity exec "$IMG" bash finetune/20_finetune_mace.sh
+echo "[pbs] end=$(date)  -> finetune/models/li6ps5cl_ft.model"
