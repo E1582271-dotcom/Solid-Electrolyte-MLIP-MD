@@ -1,0 +1,33 @@
+#!/bin/bash
+# W7 step 2 — DFT-label Li6PS5Cl snapshots with Quantum ESPRESSO on Atlas CPU (Project 2).
+# Personal free budget -> no -P. DO labelling on CPU (A40 is poor at FP64/DFT).
+#
+# LOGIN-NODE PREREQS (compute nodes are OFFLINE — do these first):
+#   bash finetune/00_fetch_pseudos.sh          # SSSP PBE UPFs -> finetune/pseudo/
+#   bash finetune/setup_qe_env.sh              # ase -> ~/asepkg
+#   VERIFY the QE module name:  module avail 2>&1 | grep -i espresso   (pass via QE_MODULE=)
+#
+# Submit from ~/AI4SSB/project2_mlip_md:
+#   qsub -v NCPUS=16,QE_MODULE=quantum-espresso label_qe.pbs
+# Resumable: the driver skips already-labelled configs, so just re-qsub to continue a long set.
+#   convergence first:  qsub -v NCPUS=16,PWARGS='--limit 1 --ecutwfc 50 --kpts 2,2,2' label_qe.pbs
+#PBS -N li6_qe_label
+#PBS -l select=1:ncpus=16:mpiprocs=16
+#PBS -l walltime=24:00:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR"
+NCPUS="${NCPUS:-16}"
+QE_MODULE="${QE_MODULE:-quantum-espresso}"   # <-- adjust to Atlas' actual name (e.g. qe/7.2)
+echo "[pbs] host=$(hostname) start=$(date) ncpus=$NCPUS module=$QE_MODULE"
+
+module load "$QE_MODULE" || { echo "[pbs] bad QE_MODULE; run: module avail 2>&1 | grep -i espresso"; exit 1; }
+command -v pw.x >/dev/null || { echo "[pbs] pw.x not on PATH after 'module load $QE_MODULE'"; exit 1; }
+
+export PYTHONUSERBASE="$HOME/asepkg"          # ase from setup_qe_env.sh
+export QE_PW_CMD="mpirun -np $NCPUS pw.x"
+
+cd finetune
+python3 11_label_qe.py --pseudo-dir pseudo --snapshots data/snapshots.xyz \
+        --out data/labelled.xyz ${PWARGS:-}
+echo "[pbs] end=$(date)  -> finetune/data/labelled.xyz  (then 12_split_train_valid.py)"

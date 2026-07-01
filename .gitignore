@@ -10,6 +10,11 @@ data/traj*/
 *.pth
 checkpoints/
 
+# W7 QE labelling: external pseudopotentials + SCF scratch (refetch / regenerate)
+finetune/pseudo/
+finetune/qe_work/
+finetune/labelling.log
+
 # kept (small, reproducible, attributed to MP mp-985592):
 #   data/Li6PS5Cl_mp-985592.cif, data/config*.cif, data/structures.json
 
