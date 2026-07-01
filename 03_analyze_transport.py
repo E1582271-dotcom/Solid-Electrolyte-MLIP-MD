@@ -66,8 +66,14 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
         c = MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"])
         T = np.array([r["T"] for r in rows])
         sig = np.array([r["sigma_mS_cm"] for r in rows])
-        ax.scatter(1000.0 / T, yfunc(sig, T), color=c, s=18, zorder=3,
-                   edgecolor="white", linewidth=0.4, label=f"{mlip} (MD)")
+        # kinisi bootstrap uncertainty (relative) -> error bar in the log y-axis. Since both
+        # panels plot log10 of something proportional to sigma and T is exact, the log-space
+        # half-height is the same: d(log10 x) = (1/ln10)*dx/x.
+        rel = np.array([(r.get("kinisi_sigma_std_mS_cm") or 0.0) / r["kinisi_sigma_mS_cm"]
+                        if r.get("kinisi_sigma_mS_cm") else 0.0 for r in rows])
+        ax.errorbar(1000.0 / T, yfunc(sig, T), yerr=rel / np.log(10.0), fmt="o", ms=3.6,
+                    color=c, mec="white", mew=0.4, elinewidth=0.7, capsize=1.8, capthick=0.7,
+                    zorder=3, label=f"{mlip} (MD)")
         fit = fits.get(mlip)
         if fit and np.isfinite(fit["Ea_eV"]):
             ax.plot(1000.0 / Tgrid, yfunc(_sigma_model(Tgrid, fit), Tgrid), color=c, lw=1.0,
