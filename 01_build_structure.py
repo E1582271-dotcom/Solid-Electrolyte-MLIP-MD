@@ -33,35 +33,27 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from src import structure as st  # noqa: E402
-
-NAVY = "#1F4E79"
+from src import plotstyle as pstyle  # noqa: E402
 
 
 def _plot_configs(configs, summaries, energies, path):
-    """One structural view per config (ASE plot_atoms), titled with key stats."""
+    """One structural view per config (ASE plot_atoms). Nature journal-final: double-column
+    width, bold a/b panel letters, one compact identity line per panel (full stats -> caption)."""
     from ase.visualize.plot import plot_atoms
 
     n = len(configs)
-    fig, axes = plt.subplots(1, n, figsize=(4.2 * n, 4.4), squeeze=False)
+    fig, axes = plt.subplots(1, n, figsize=(min(pstyle.COL_DOUBLE_IN, 3.6 * n), 3.4),
+                             squeeze=False)
     for j, (cfg, summ, en) in enumerate(zip(configs, summaries, energies)):
         ax = axes[0][j]
         atoms = st.to_ase(cfg)
         plot_atoms(atoms, ax, radii=0.45, rotation="20x,20y,0z")
         ax.set_axis_off()
-        tag = "ground-state S/Cl" if j == 0 else f"disorder variant {j}"
-        ax.set_title(
-            f"config {j}  ({tag})\n{summ['formula']}  ·  {summ['n_atoms']} atoms"
-            f"  ·  {summ['n_Li']} Li\nEwald rank {j}  (E={en:.1f})",
-            fontsize=10, color=NAVY,
-        )
-    fig.suptitle(
-        "Li$_6$PS$_5$Cl baseline cells (MP mp-985592, S/Cl disorder enumerated)",
-        fontsize=12, color=NAVY, y=1.02,
-    )
-    fig.tight_layout()
-    fig.savefig(path, dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    return path
+        tag = "ground state" if j == 0 else f"variant {j}"
+        ax.set_title(f"config {j} ({tag}) · Ewald rank {j}", fontsize=pstyle.FS_ANNOT,
+                     color=pstyle.PALETTE["neutral_dark"])
+        pstyle.add_panel_label(ax, "abcdef"[j], x=0.0, y=1.02)
+    return pstyle.finalize_figure(fig, path)[0]
 
 
 def main():
@@ -75,6 +67,7 @@ def main():
     ap.add_argument("--api-key", default=None, help="MP API key (else $MP_API_KEY / shared file)")
     args = ap.parse_args()
 
+    pstyle.apply_publication_style()  # Arial + editable-text SVG, consistent with 02/03
     os.makedirs(args.data_dir, exist_ok=True)
     os.makedirs(args.fig_dir, exist_ok=True)
     reps = tuple(int(x) for x in args.supercell.split(","))

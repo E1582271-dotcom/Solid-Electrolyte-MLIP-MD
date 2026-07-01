@@ -1,0 +1,44 @@
+! Quantum ESPRESSO pw.x SCF template — DFT labelling for Li6PS5Cl fine-tuning (W7 step 2).
+! This is the namelist SKELETON. Per-snapshot ATOMIC_POSITIONS + CELL_PARAMETERS are injected
+! from finetune/data/snapshots.xyz (e.g. via ase.io.espresso.write_espresso_in, one input per
+! config), then run `pw.x -in <config>.in > <config>.out`. Parse energy+forces back into the
+! training extxyz.
+!
+! BEFORE mass labelling: (1) drop in SSSP-efficiency pseudopotentials (PBE) for Li P S Cl;
+! (2) converge ecutwfc/ecutrho and the k-mesh on ONE snapshot (52-atom cubic ~10.28 Å cell
+! tolerates a modest mesh, but never trust an unconverged label set).
+
+&CONTROL
+    calculation   = 'scf'
+    prefix        = 'li6ps5cl'
+    outdir        = './tmp'
+    pseudo_dir    = './pseudo'        ! <-- put SSSP PBE UPF files here
+    tprnfor       = .true.            ! print forces (REQUIRED for MLIP training)
+    tstress       = .true.            ! print stress (useful for cell-aware fine-tune)
+    verbosity     = 'high'
+/
+&SYSTEM
+    ibrav         = 0                 ! cell given explicitly via CELL_PARAMETERS
+    nat           = 52
+    ntyp          = 4
+    ecutwfc       = 60.0              ! Ry  — CONVERGE THIS
+    ecutrho       = 480.0             ! Ry  (8x ecutwfc for ultrasoft/PAW; tune per pseudo)
+    occupations   = 'smearing'
+    smearing      = 'gaussian'
+    degauss       = 0.01
+/
+&ELECTRONS
+    conv_thr      = 1.0d-8
+    mixing_beta   = 0.4
+/
+
+ATOMIC_SPECIES
+    Li   6.941   Li.pbe.UPF          ! <-- replace with actual SSSP filenames
+    P   30.974   P.pbe.UPF
+    S   32.06    S.pbe.UPF
+    Cl  35.45    Cl.pbe.UPF
+
+K_POINTS automatic
+    2 2 2 0 0 0                       ! Γ-centred-ish; CONVERGE (3 3 3 if needed)
+
+! CELL_PARAMETERS (angstrom) and ATOMIC_POSITIONS (angstrom) appended per snapshot.

@@ -1,0 +1,29 @@
+#!/bin/bash
+# Baseline Li6PS5Cl MLIP-MD on Vanda A40 (Project 2, W6). Personal free budget -> no -P.
+# Submit from ~/AI4SSB/project2_mlip_md, e.g.:
+#   smoke : qsub -v MLIP=mace,TEMPS=800,STEPS=2000,EQUILIB=500,LOG_EVERY=20 run_md.pbs
+#   full  : qsub -v MLIP=mace,TEMPS="600,800,1000",STEPS=50000,EQUILIB=5000 run_md.pbs
+#PBS -N li6_md
+#PBS -l select=1:ngpus=1
+#PBS -l walltime=04:00:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR"
+echo "[pbs] host=$(hostname) start=$(date)"
+echo "[pbs] MLIP=${MLIP:-mace} TEMPS=${TEMPS:-800} STEPS=${STEPS:-2000} EQUILIB=${EQUILIB:-500}"
+
+module load singularity
+IMG=/app1/common/singularity-img/vanda/pytorch_2.5_cuda_12.4_unsloth.sif
+
+# pass params through to the container shell (SINGULARITYENV_X -> X inside)
+export SINGULARITYENV_MLIP="${MLIP:-mace}"
+export SINGULARITYENV_TEMPS="${TEMPS:-800}"
+export SINGULARITYENV_STEPS="${STEPS:-2000}"
+export SINGULARITYENV_EQUILIB="${EQUILIB:-500}"
+export SINGULARITYENV_LOG_EVERY="${LOG_EVERY:-50}"
+export SINGULARITYENV_PKGBASE="${PKGBASE:-macepkg}"
+export SINGULARITYENV_TRAJ_TAG="${TRAJ_TAG:-}"
+
+# NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
+singularity exec "$IMG" bash run_in_container.sh
+echo "[pbs] end=$(date)"

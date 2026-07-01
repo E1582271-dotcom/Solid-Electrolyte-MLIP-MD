@@ -2,8 +2,8 @@
 mp_api_key.txt
 *.key
 
-# large MD trajectories — regenerate on GPU (02_baseline_md.py)
-data/traj/
+# large MD trajectories, any --traj-tag (traj/, traj_long/, …) — regenerate on GPU
+data/traj*/
 
 # MLIP model-weight caches downloaded at runtime
 *.model

@@ -1,0 +1,54 @@
+{
+  "baseline": true,
+  "fine_tuned": false,
+  "runs": [
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 600.0,
+      "n_steps": 150000,
+      "timestep_fs": 1.0,
+      "production_ps": 150.0,
+      "log_every": 50,
+      "n_frames": 3001,
+      "mean_T": 613.2,
+      "std_T": 67.8,
+      "mean_E_per_atom": -4.0674,
+      "drift_meV_atom_ps": 0.001,
+      "wall_seconds": 5247.3,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_long/mace_600K.traj"
+    },
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 800.0,
+      "n_steps": 150000,
+      "timestep_fs": 1.0,
+      "production_ps": 150.0,
+      "log_every": 50,
+      "n_frames": 3001,
+      "mean_T": 820.8,
+      "std_T": 91.4,
+      "mean_E_per_atom": -4.037,
+      "drift_meV_atom_ps": 0.055,
+      "wall_seconds": 5093.4,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_long/mace_800K.traj"
+    },
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 1000.0,
+      "n_steps": 150000,
+      "timestep_fs": 1.0,
+      "production_ps": 150.0,
+      "log_every": 50,
+      "n_frames": 3001,
+      "mean_T": 1003.4,
+      "std_T": 116.6,
+      "mean_E_per_atom": -4.0096,
+      "drift_meV_atom_ps": -0.035,
+      "wall_seconds": 5014.7,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_long/mace_1000K.traj"
+    }
+  ]
+}
