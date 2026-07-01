@@ -40,19 +40,34 @@ def _plot_configs(configs, summaries, energies, path):
     """One structural view per config (ASE plot_atoms). Nature journal-final: double-column
     width, bold a/b panel letters, one compact identity line per panel (full stats -> caption)."""
     from ase.visualize.plot import plot_atoms
+    from ase.data import atomic_numbers
+    from ase.data.colors import jmol_colors
+    from matplotlib.lines import Line2D
 
     n = len(configs)
     fig, axes = plt.subplots(1, n, figsize=(min(pstyle.COL_DOUBLE_IN, 3.6 * n), 3.4),
                              squeeze=False)
+    rows = []
     for j, (cfg, summ, en) in enumerate(zip(configs, summaries, energies)):
         ax = axes[0][j]
         atoms = st.to_ase(cfg)
         plot_atoms(atoms, ax, radii=0.45, rotation="20x,20y,0z")
         ax.set_axis_off()
-        tag = "ground state" if j == 0 else f"variant {j}"
-        ax.set_title(f"config {j} ({tag}) · Ewald rank {j}", fontsize=pstyle.FS_ANNOT,
-                     color=pstyle.PALETTE["neutral_dark"])
-        pstyle.add_panel_label(ax, "abcdef"[j], x=0.0, y=1.02)
+        pstyle.add_panel_label(ax, "abcdef"[j], x=0.0, y=1.02)  # identity/Ewald-rank -> caption
+        syms = atoms.get_chemical_symbols()
+        rows.append([j, "ground state" if j == 0 else f"variant {j}",
+                     syms.count("Li"), syms.count("P"), syms.count("S"), syms.count("Cl"),
+                     f"{en:.6f}" if en is not None else ""])
+    # shared element legend using the exact jmol colors plot_atoms draws with
+    elems = ["Li", "P", "S", "Cl"]
+    handles = [Line2D([0], [0], marker="o", linestyle="none", markersize=5,
+                      markerfacecolor=jmol_colors[atomic_numbers[e]], markeredgecolor="0.3",
+                      markeredgewidth=0.4, label=e) for e in elems]
+    fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
+               fontsize=pstyle.FS_LEGEND, handletextpad=0.3, columnspacing=1.4,
+               bbox_to_anchor=(0.5, -0.01))
+    pstyle.save_source_data(path, ["config", "tag", "n_Li", "n_P", "n_S", "n_Cl",
+                                   "ewald_energy_eV"], rows)
     return pstyle.finalize_figure(fig, path)[0]
 
 

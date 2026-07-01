@@ -41,7 +41,10 @@ def _plot_md(records, mlip, fig_dir, tag=""):
     """Temperature + energy traces per temperature for one MLIP (sanity: stable, no blow-up).
     Nature journal-final: double-column, thin traces, bold a/b letters, no chart titles/suptitle
     (the MLIP + system belong in the caption)."""
+    import numpy as np
+
     fig, axes = plt.subplots(1, 2, figsize=(pstyle.COL_DOUBLE_IN, 2.8))
+    rows = []
     for rec in records:
         s = rec["series"]
         t_ps = [stp * rec["timestep_fs"] / 1000.0 for stp in s["step"]]
@@ -49,6 +52,9 @@ def _plot_md(records, mlip, fig_dir, tag=""):
         c = TEMP_COLORS.get(int(T), pstyle.PALETTE["neutral_dark"])
         axes[0].plot(t_ps, s["T"], color=c, lw=0.7, label=f"{int(T)} K")
         axes[1].plot(t_ps, s["E_per_atom"], color=c, lw=0.7, label=f"{int(T)} K")
+        Ta, Ea, tp = np.asarray(s["T"], float), np.asarray(s["E_per_atom"], float), np.asarray(t_ps, float)
+        drift = (np.polyfit(tp, Ea, 1)[0] * 1000.0) if len(tp) > 1 else 0.0   # meV/atom/ps
+        rows.append([int(T), f"{Ta.mean():.2f}", f"{Ta.std():.2f}", f"{Ea.mean():.5f}", f"{drift:.4f}"])
     for T in {int(r["temperature_K"]) for r in records}:
         axes[0].axhline(T, ls="--", lw=0.5, color=TEMP_COLORS.get(T, pstyle.PALETTE["neutral_mid"]))
     axes[0].set(xlabel="time (ps)", ylabel="temperature (K)")
@@ -56,7 +62,10 @@ def _plot_md(records, mlip, fig_dir, tag=""):
     axes[0].legend(title="target $T$", title_fontsize=pstyle.FS_LEGEND, loc="upper right")
     for ax, ltr in zip(axes, "ab"):
         pstyle.add_panel_label(ax, ltr)
-    return pstyle.finalize_figure(fig, os.path.join(fig_dir, f"02_md_stability_{mlip}{tag}.png"))[0]
+    out = os.path.join(fig_dir, f"02_md_stability_{mlip}{tag}.png")
+    pstyle.save_source_data(out, ["temperature_K", "mean_T_K", "std_T_K",
+                                  "mean_E_per_atom_eV", "drift_meV_atom_ps"], rows)
+    return pstyle.finalize_figure(fig, out)[0]
 
 
 def main():

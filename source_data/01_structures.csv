@@ -1,0 +1,3 @@
+config,tag,n_Li,n_P,n_S,n_Cl,ewald_energy_eV
+0,ground state,24,4,20,4,-1010.681000
+1,variant 1,24,4,20,4,-1000.657000

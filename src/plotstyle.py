@@ -96,10 +96,11 @@ def add_panel_label(ax, letter, x=-0.08, y=1.04, fontsize=FS_PANEL, color=None,
             color=color or PALETTE["neutral_black"], ha="left", va="bottom")
 
 
-def finalize_figure(fig, out_path: str, formats=("png", "svg"), dpi: int = 300,
+def finalize_figure(fig, out_path: str, formats=("png", "svg"), dpi: int = 600,
                     pad: float = 0.6, close: bool = True):
     """tight_layout + save to png (embed) and svg (editable). The out_path suffix is
-    ignored -- one file per entry in `formats`. Returns the saved paths."""
+    ignored -- one file per entry in `formats`. Returns the saved paths.
+    dpi=600 matches the project1/3 house standard for raster previews."""
     fig.tight_layout(pad=pad)
     base = Path(out_path).with_suffix("")
     os.makedirs(base.parent, exist_ok=True)
@@ -111,3 +112,20 @@ def finalize_figure(fig, out_path: str, formats=("png", "svg"), dpi: int = 300,
     if close:
         plt.close(fig)
     return saved
+
+
+def save_source_data(fig_path: str, columns, rows, subdir: str = "source_data"):
+    """Write a figure's source data next to figures/, named after the figure — the
+    provenance CSV projects 1 & 3 pair with every quantitative panel.
+    figures/03_arrhenius_prod.png -> source_data/03_arrhenius_prod.csv"""
+    import csv
+    base = Path(fig_path)
+    stem = base.with_suffix("").name
+    out_dir = (base.parent.parent if base.parent.name == "figures" else base.parent) / subdir
+    os.makedirs(out_dir, exist_ok=True)
+    out = out_dir / f"{stem}.csv"
+    with open(out, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(columns)
+        w.writerows(rows)
+    return str(out)

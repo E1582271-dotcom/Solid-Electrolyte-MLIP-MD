@@ -73,11 +73,10 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
                         if r.get("kinisi_sigma_mS_cm") else 0.0 for r in rows])
         ax.errorbar(1000.0 / T, yfunc(sig, T), yerr=rel / np.log(10.0), fmt="o", ms=3.6,
                     color=c, mec="white", mew=0.4, elinewidth=0.7, capsize=1.8, capthick=0.7,
-                    zorder=3, label=f"{mlip} (MD)")
+                    zorder=3)
         fit = fits.get(mlip)
         if fit and np.isfinite(fit["Ea_eV"]):
-            ax.plot(1000.0 / Tgrid, yfunc(_sigma_model(Tgrid, fit), Tgrid), color=c, lw=1.0,
-                    label=f"{mlip} fit")
+            ax.plot(1000.0 / Tgrid, yfunc(_sigma_model(Tgrid, fit), Tgrid), color=c, lw=1.0)
             ax.scatter([1000.0 / 300], [yfunc(fit["sigma300_mS_cm"], 300.0)], color=c,
                        marker="*", s=70, edgecolor=ps.PALETTE["neutral_black"],
                        linewidth=0.4, zorder=4)
@@ -90,10 +89,19 @@ def _plot_arrhenius(per_mlip, fits, path):
       (b) log10(sigma*T) -> a straight line, the textbook Arrhenius form fitted in
           ln(sigma*T) vs 1/T."""
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(ps.COL_DOUBLE_IN, 3.2))
+    from matplotlib.lines import Line2D
+    _pretty = {"mace": "MACE", "mattersim": "MatterSim"}
+    # one consolidated legend entry per potential (marker = MD point, line = Arrhenius fit)
+    mlip_handles = [Line2D([0], [0], color=MLIP_COLORS.get(m, ps.PALETTE["neutral_dark"]),
+                           marker="o", ms=3.6, mec="white", mew=0.4, lw=1.0,
+                           label=_pretty.get(m, m)) for m in per_mlip]
 
     # -- (a) log10 sigma : curved by the sigma = sigma*T / T factor --
     _arrhenius_panel(axL, per_mlip, fits, lambda s, T: np.log10(s))
-    yloL = np.log10(EXPT_MAIN) - 0.25
+    # y-floor must clear the LOWEST 300 K fit star (e.g. fine-tuned sigma300~0.5), not just expt
+    star_lo = [np.log10(f["sigma300_mS_cm"]) for f in fits.values()
+               if f and np.isfinite(f.get("sigma300_mS_cm", np.nan))]
+    yloL = min([np.log10(EXPT_MAIN)] + star_lo) - 0.25
     yhiL = max(np.log10(r["sigma_mS_cm"]) for rows in per_mlip.values() for r in rows) + 0.35
     axL.set_ylim(yloL, yhiL)
     axL.text(1000.0 / 300, 1.01, "300 K", transform=axL.get_xaxis_transform(),
@@ -103,7 +111,7 @@ def _plot_arrhenius(per_mlip, fits, path):
              color=EXPT_COLOR, fontsize=ps.FS_ANNOT, ha="left", va="top",
              transform=axL.get_yaxis_transform())
     axL.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma$  (mS cm$^{-1}$)")
-    axL.legend(loc="upper right")
+    axL.legend(handles=mlip_handles, loc="upper right")
     ps.add_panel_label(axL, "a")
 
     # -- (b) log10(sigma*T) : the straight line actually being fitted --
@@ -119,7 +127,7 @@ def _plot_arrhenius(per_mlip, fits, path):
              color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="center", va="bottom")
     # experiment is measured at room T only -> a single reference point at 300 K, not a line
     axR.scatter([1000.0 / 300], [yT(EXPT_MAIN, 300.0)], marker="X", s=40, color=EXPT_COLOR,
-                zorder=5, label="expt @300 K")
+                zorder=5)
     # per-MLIP fit stats compacted into one corner box (kept out of the legend)
     stats = [f"{m}: $E_a$ {fits[m]['Ea_eV']:.2f} eV · $\\sigma_{{300}}$ "
              f"{fits[m]['sigma300_mS_cm']:.1f} · $R^2$ {fits[m]['R2']:.3f}"
@@ -128,8 +136,17 @@ def _plot_arrhenius(per_mlip, fits, path):
         axR.text(0.03, 0.03, "\n".join(stats), transform=axR.transAxes,
                  fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
     axR.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
-    axR.legend(loc="upper right")
+    expt_handle = Line2D([0], [0], color=EXPT_COLOR, marker="X", ms=5, lw=0, label="expt @300 K")
+    axR.legend(handles=mlip_handles + [expt_handle], loc="upper right")
     ps.add_panel_label(axR, "b")
+    src_rows = []
+    for m, rows in per_mlip.items():
+        f = fits.get(m, {}) or {}
+        for r in rows:
+            src_rows.append([m, r["T"], r["sigma_mS_cm"], r.get("kinisi_sigma_std_mS_cm", ""),
+                             f.get("Ea_eV", ""), f.get("sigma300_mS_cm", ""), f.get("R2", "")])
+    ps.save_source_data(path, ["mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
+                               "fit_Ea_eV", "fit_sigma300_mS_cm", "fit_R2"], src_rows)
     return ps.finalize_figure(fig, path)[0]
 
 
@@ -137,16 +154,20 @@ def _plot_sigma300_bar(fits, path):
     """Extrapolated sigma(300 K) vs experiment (single-column, log y). No chart title;
     the material + fit provenance belong in the caption."""
     fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.0))
-    labels, vals, colors = [], [], []
+    labels, vals, colors, cats = [], [], [], []
+    pretty = {"mace": "MACE", "mattersim": "MatterSim"}   # run type is in the caption/filename
     for mlip, fit in fits.items():
         if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
-            labels.append(f"{mlip}\n(baseline)")
+            labels.append(pretty.get(mlip, mlip))
             vals.append(fit["sigma300_mS_cm"])
             colors.append(MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"]))
+            cats.append(pretty.get(mlip, mlip))
     for name, v in EXPT.items():
-        labels.append("sintered\n(expt)" if "sinter" in name else "mech.chem\n(expt)")
+        lab = "sintered\n(expt)" if "sinter" in name else "mech.chem\n(expt)"
+        labels.append(lab)
         vals.append(v)
         colors.append(ps.PALETTE["neutral_mid"])   # experiment = neutral reference
+        cats.append(lab.replace("\n", " "))
     x = np.arange(len(labels))
     ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.7)
     ax.set_yscale("log")
@@ -155,6 +176,7 @@ def _plot_sigma300_bar(fits, path):
     ax.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
     for xi, v in zip(x, vals):
         ax.text(xi, v, f"{v:.2g}", ha="center", va="bottom", fontsize=ps.FS_ANNOT)
+    ps.save_source_data(path, ["category", "sigma300_mS_cm"], list(zip(cats, vals)))
     return ps.finalize_figure(fig, path)[0]
 
 
