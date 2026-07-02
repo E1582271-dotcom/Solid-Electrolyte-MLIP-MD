@@ -27,8 +27,8 @@ element (Li/P/S/Cl legend), dashed unit cell. *Stats:* deterministic structures 
 
 **Fig. 2 | Production conductivity (416-atom, foundation MACE-MP-0).** `figures/03_arrhenius_prod.*`
 + `figures/03_sigma300_vs_expt_prod.*` — *[headline result]*
-Arrhenius plot on both axes ((**a**) log₁₀σ, curved; (**b**) log₁₀ σT, linear) + the σ(300 K) bar vs
-experiment. 2×2×2 supercell, 200 ps, three temperatures. **Result: σ(300 K)=5.57 mS cm⁻¹ (1.8×
+Arrhenius plot in the linear form (log₁₀ σT vs 1000/T — points=MD, line=fit, ★=300 K extrapolation,
+✕=experiment) + the σ(300 K) bar vs experiment. 2×2×2 supercell, 200 ps, three temperatures. **Result: σ(300 K)=5.57 mS cm⁻¹ (1.8×
 experiment), Eₐ=0.265 eV, R²=0.999** — near-literature agreement from a pure, un-fine-tuned MLIP.
 *Stats:* n=1 trajectory per T; centre = pymatgen DiffusionAnalyzer D → Nernst-Einstein σ; error bars =
 kinisi bootstrap 1σ on D (GLS, MSD autocorrelation) propagated to σ; Arrhenius = OLS of ln(σT) vs 1/T

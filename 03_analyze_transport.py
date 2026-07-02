@@ -92,54 +92,32 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
 
 
 def _plot_arrhenius(per_mlip, fits, path):
-    """Side-by-side: the SAME Arrhenius fit shown on two y-axes.
-      (a) log10 sigma   -> visibly curved, because sigma = (sigma*T)/T drops a log T term;
-      (b) log10(sigma*T) -> a straight line, the textbook Arrhenius form fitted in
-          ln(sigma*T) vs 1/T."""
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(ps.COL_DOUBLE_IN, 3.2))
-
-    # -- (a) log10 sigma : curved by the sigma = sigma*T / T factor --
-    _arrhenius_panel(axL, per_mlip, fits, lambda s, T: np.log10(s))
-    # y-floor must clear the LOWEST 300 K fit star (e.g. fine-tuned sigma300~0.5), not just expt
-    star_lo = [np.log10(f["sigma300_mS_cm"]) for f in fits.values()
-               if f and np.isfinite(f.get("sigma300_mS_cm", np.nan))]
-    yloL = min([np.log10(EXPT_MAIN)] + star_lo) - 0.25
-    yhiL = max(np.log10(r["sigma_mS_cm"]) for rows in per_mlip.values() for r in rows) + 0.35
-    axL.set_ylim(yloL, yhiL)
-    axL.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=axL.get_xaxis_transform(),
-             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
-    axL.axhline(np.log10(EXPT_MAIN), ls="--", color=EXPT_COLOR, lw=0.8)
-    axL.text(0.015, np.log10(EXPT_MAIN) - 0.04, f"expt {EXPT_MAIN} mS cm$^{{-1}}$",
-             color=EXPT_COLOR, fontsize=ps.FS_ANNOT, ha="left", va="top",
-             transform=axL.get_yaxis_transform())
-    axL.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma$  (mS cm$^{-1}$)")
-    ps.add_panel_label(axL, "a")
-
-    # -- (b) log10(sigma*T) : the straight line actually being fitted --
+    """Arrhenius plot in the linear form that is actually fitted: log10(sigma*T) vs 1000/T
+    (ln(sigma*T) = -Ea/kT + c). Points = MD (kinisi error bars), line = fit, star = 300 K
+    extrapolation, X = experiment; corner box gives Ea, sigma300, R^2. Single panel."""
+    fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.2))
     yT = lambda s, T: np.log10(s * T)
-    _arrhenius_panel(axR, per_mlip, fits, yT)
+    _arrhenius_panel(ax, per_mlip, fits, yT)
     data_yT = [yT(r["sigma_mS_cm"], r["T"]) for rows in per_mlip.values() for r in rows]
+    # y-floor must clear the LOWEST 300 K reference (expt or a fit star, e.g. fine-tuned)
     ref_yT = [yT(EXPT_MAIN, 300.0)] + [
         yT(f["sigma300_mS_cm"], 300.0) for f in fits.values()
         if f and np.isfinite(f.get("sigma300_mS_cm", np.nan))]
-    yhiR = max(data_yT) + 0.35
-    axR.set_ylim(min(ref_yT) - 0.25, yhiR)
-    axR.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=axR.get_xaxis_transform(),
-             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
-    # experiment is measured at room T only -> a single reference point at 300 K, not a line
-    axR.scatter([1000.0 / 300], [yT(EXPT_MAIN, 300.0)], marker="X", s=40, color=EXPT_COLOR,
-                zorder=5)
-    axR.annotate("expt", (1000.0 / 300, yT(EXPT_MAIN, 300.0)), textcoords="offset points",
-                 xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
-    # per-MLIP fit stats compacted into one corner box (kept out of the legend)
+    ax.set_ylim(min(ref_yT) - 0.25, max(data_yT) + 0.35)
+    ax.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=ax.get_xaxis_transform(),
+            color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
+    # experiment is measured at room T only -> a single reference point at 300 K
+    ax.scatter([1000.0 / 300], [yT(EXPT_MAIN, 300.0)], marker="X", s=40, color=EXPT_COLOR, zorder=5)
+    ax.annotate("expt", (1000.0 / 300, yT(EXPT_MAIN, 300.0)), textcoords="offset points",
+                xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
+    # per-MLIP fit stats in one corner box
     stats = [f"{m}: $E_a$ {fits[m]['Ea_eV']:.2f} eV · $\\sigma_{{300}}$ "
              f"{fits[m]['sigma300_mS_cm']:.1f} · $R^2$ {fits[m]['R2']:.3f}"
              for m in per_mlip if fits.get(m) and np.isfinite(fits[m].get("R2", np.nan))]
     if stats:
-        axR.text(0.03, 0.03, "\n".join(stats), transform=axR.transAxes,
-                 fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
-    axR.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
-    ps.add_panel_label(axR, "b")
+        ax.text(0.03, 0.03, "\n".join(stats), transform=ax.transAxes,
+                fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
+    ax.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
     src_rows = []
     for m, rows in per_mlip.items():
         f = fits.get(m, {}) or {}
