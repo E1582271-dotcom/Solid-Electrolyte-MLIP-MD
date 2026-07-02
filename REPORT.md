@@ -83,7 +83,7 @@ MD 稳定性（守恒性检查,温度与能量随时间平稳、无爆炸/漂移
 - **外推敏感性有文献印证**：[1] 明确报告 300 K 下 100 ns 无跳跃、必须从高温外推，且外推值随拟合温区从 0.22 变到 2.2 mS/cm——与本工作"长程外推有额外不确定性、故 50→150 ps 收敛很关键"一致。
 - **单晶上界**：实验多为多晶含晶界，模拟为单晶,故"略高于典型实验"符合预期；微调欠预测（0.16×）为离群点，归因见 §5。
 
-参考：[1] arXiv:2403.14116 · [2] ACS Appl. Mater. Interfaces 2018, `10.1021/acsami.8b15121` · [3] Chem. Mater. 2022, `10.1021/acs.chemmater.2c03818` · [4] Front. Chem. 2021, `10.3389/fchem.2021.778057` · [5] ACS Appl. Mater. Interfaces, `10.1021/acsami.8b07476`。
+参考：见文末**参考文献** [1]–[5]（[1] arXiv:2403.14116 · [2] ACS AMI 2018 · [3] Chem. Mater. 2023 · [4] Front. Chem. 2021 · [5] ACS AMI 2018）。
 
 ---
 
@@ -138,5 +138,13 @@ python 03_analyze_transport.py --traj-tag _ft
 - 所有计算跑在 **NUS Vanda**（个人免费额度，A40 MD / CPU DFT），无付费租用。
 
 ---
+
+## 参考文献
+
+1. Z. Li, J. Huang, X. Ren, J. Li, R. Xiao, H. Li. *Mechanistic Insights into Temperature Effects for Ionic Conductivity in Li₆PS₅Cl.* arXiv:2403.14116 (2024). — MLIP-MD;300 K/100 ns 无跳跃须外推,外推随温区变化。
+2. S. Wang, Y. Zhang, X. Zhang, T. Liu, Y.-H. Lin, Y. Shen, L. Li, C.-W. Nan. *High-Conductivity Argyrodite Li₆PS₅Cl Solid Electrolytes Prepared via Optimized Sintering Processes for All-Solid-State Lithium–Sulfur Batteries.* ACS Appl. Mater. Interfaces **2018**, 10 (49), 42279–42285. DOI 10.1021/acsami.8b15121. — 优化烧结 σ(300 K)=3.15 mS/cm(本工作主对标）。
+3. R. F. Indrawan, H. Gamo, A. Nagai, A. Matsuda. *Chemically Understanding the Liquid-Phase Synthesis of Argyrodite Solid Electrolyte Li₆PS₅Cl with the Highest Ionic Conductivity for All-Solid-State Batteries.* Chem. Mater. **2023**, 35 (6), 2549–2558. DOI 10.1021/acs.chemmater.2c03818. — 液相合成 σ>2 mS/cm。
+4. J. M. Lee, Y. S. Park, J.-W. Moon, H. Hwang. *Ionic and Electronic Conductivities of Lithium Argyrodite Li₆PS₅Cl Electrolytes Prepared via Wet Milling and Post-Annealing.* Front. Chem. **2021**, 9, 778057. DOI 10.3389/fchem.2021.778057. — 湿磨+退火 σ≈1.0–1.9 mS/cm。
+5. C. Yu, S. Ganapathy, J. Hageman, L. van Eijck, E. R. H. van Eck, L. Zhang, T. Schwietert, S. Basak, E. M. Kelder, M. Wagemaker. *Facile Synthesis toward the Optimal Structure-Conductivity Characteristics of the Argyrodite Li₆PS₅Cl Solid-State Electrolyte.* ACS Appl. Mater. Interfaces **2018**, 10 (39), 33296–33306. DOI 10.1021/acsami.8b07476. — 溶剂处理 Eₐ≈0.20–0.25 eV。
 
 *生成：2026-07-01。数据溯源见各 `metrics_*.json` 与 `finetune/results/`。*

@@ -72,7 +72,7 @@ python 03_analyze_transport.py
 - **无序采样**：仅几个代表构型，非完整 S/Cl 系综。
 
 ## 结果（W6 基线 + W8 生产 + W7 微调，来自 `data/metrics{,_long,_prod,_ft}.json`）
-对标实验：Li₆PS₅Cl 室温 ~3.15 mS/cm（烧结）/ 1.33 mS/cm（机械化学）。D@1000K 为 kinisi 估计（带误差棒）。
+对标实验：Li₆PS₅Cl 室温 ~3.15 mS/cm（烧结）/ 1.33 mS/cm（机械化学）。D@1000K 为 kinisi 估计（带误差棒）。**完整文献对标(实验+计算,含 σ/Eₐ 与引用)见 [REPORT.md §3.1](REPORT.md)。**
 
 | MLIP（胞·时长） | D@1000K (cm²/s) | σ(300K) 外推 (mS/cm) | Eₐ (eV) | 与实验 3.15 倍率 | Arrhenius R² | 备注 |
 |---|---|---|---|---|---|---|
