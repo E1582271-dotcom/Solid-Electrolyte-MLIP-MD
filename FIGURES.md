@@ -1,11 +1,12 @@
 # Figure legends & statistics (Project 2 — Li₆PS₅Cl MLIP-MD)
 
 Submission-grade figure captions + statistics/provenance, per the Nature figure QA contract.
-Every figure ships as **PNG (600 dpi preview) + SVG + PDF (editable vector, `pdf.fonttype=42` /
-`svg.fonttype='none'`)** at Nature column widths (single ≈89 mm, double ≈183 mm), 5–7 pt sans text,
-8 pt bold lowercase panel letters, top/right spines off, frameless/direct legends. Line-art graphs use
-vector PDF (Nature's preferred format for graphs); no TIFF (reserved for photographic panels — none here).
-Each quantitative figure has a `source_data/<name>.csv`.
+The repo tracks **PNG (600 dpi preview)**; the editable **SVG + vector PDF** submission bundle
+(`svg.fonttype='none'`, `pdf.fonttype=42` — Nature's preferred vector format for line-art graphs; no
+TIFF, that's for photographic panels, none here) is regenerated on demand via
+`finalize_figure(..., formats=("png","svg","pdf"))`. Figures are at Nature column widths (single
+≈89 mm, double ≈183 mm), 5–7 pt sans text, 8 pt bold lowercase panel letters, top/right spines off,
+frameless/direct legends. Each quantitative figure has a `source_data/<name>.csv`.
 
 ---
 
