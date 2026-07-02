@@ -70,8 +70,8 @@ def apply_publication_style(font_size: int = FS_LABEL, axes_linewidth: float = 0
     plt.rcParams["pdf.fonttype"] = 42
     # Layout & style
     plt.rcParams["font.size"] = font_size
-    plt.rcParams["axes.spines.right"] = False
-    plt.rcParams["axes.spines.top"] = False
+    plt.rcParams["axes.spines.right"] = True   # full 4-sided box (materials/physics convention)
+    plt.rcParams["axes.spines.top"] = True
     plt.rcParams["axes.linewidth"] = axes_linewidth
     plt.rcParams["axes.labelsize"] = FS_LABEL
     plt.rcParams["axes.titlesize"] = FS_LABEL
@@ -96,12 +96,11 @@ def add_panel_label(ax, letter, x=-0.08, y=1.04, fontsize=FS_PANEL, color=None,
             color=color or PALETTE["neutral_black"], ha="left", va="bottom")
 
 
-def finalize_figure(fig, out_path: str, formats=("png",), dpi: int = 600,
+def finalize_figure(fig, out_path: str, formats=("png", "svg", "pdf"), dpi: int = 600,
                     pad: float = 0.6, close: bool = True):
-    """tight_layout + save. Default = png only (600-dpi preview) to keep the repo light.
-    For submission, regenerate editable vector with formats=("png","svg","pdf"): svg.fonttype='none'
-    and pdf.fonttype=42 (set in apply_publication_style) keep the text selectable.
-    The out_path suffix is ignored -- one file per entry in `formats`. Returns the saved paths."""
+    """tight_layout + save the publish bundle: png (600-dpi preview), svg (editable,
+    svg.fonttype='none') and pdf (editable vector, pdf.fonttype=42 -- Nature's preferred format for
+    line-art graphs). The out_path suffix is ignored -- one file per entry in `formats`. Returns paths."""
     fig.tight_layout(pad=pad)
     base = Path(out_path).with_suffix("")
     os.makedirs(base.parent, exist_ok=True)

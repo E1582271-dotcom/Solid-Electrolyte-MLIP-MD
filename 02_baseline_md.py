@@ -59,13 +59,16 @@ def _plot_md(records, mlip, fig_dir, tag=""):
         axes[0].axhline(T, ls="--", lw=0.5, color=TEMP_COLORS.get(T, pstyle.PALETTE["neutral_mid"]))
     axes[0].set(xlabel="time (ps)", ylabel="temperature (K)")
     axes[1].set(xlabel="time (ps)", ylabel="potential energy (eV/atom)")
+    # direct in-colour label at the right end of each temperature trace (panel a), no legend box
+    t_end = max(max(r["series"]["step"]) * r["timestep_fs"] / 1000.0 for r in records)
+    for rec in records:
+        Ti = int(rec["temperature_K"])
+        ci = TEMP_COLORS.get(Ti, pstyle.PALETTE["neutral_dark"])
+        axes[0].annotate(f"{Ti} K", (t_end, Ti), textcoords="offset points", xytext=(-2, 0),
+                         ha="right", va="center", color=ci, fontsize=pstyle.FS_ANNOT, fontweight="bold",
+                         bbox=dict(facecolor="white", alpha=0.7, edgecolor="none", pad=0.5), zorder=5)
     for ax, ltr in zip(axes, "ab"):
         pstyle.add_panel_label(ax, ltr)
-    # traces fill the frame -> put the T legend BELOW both panels so it never overlaps a curve
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, title="target $T$", title_fontsize=pstyle.FS_LEGEND,
-               fontsize=pstyle.FS_LEGEND, loc="lower center", ncol=len(labels),
-               frameon=False, columnspacing=1.6, handletextpad=0.4, bbox_to_anchor=(0.5, -0.02))
     out = os.path.join(fig_dir, f"02_md_stability_{mlip}{tag}.png")
     pstyle.save_source_data(out, ["temperature_K", "mean_T_K", "std_T_K",
                                   "mean_E_per_atom_eV", "drift_meV_atom_ps"], rows)

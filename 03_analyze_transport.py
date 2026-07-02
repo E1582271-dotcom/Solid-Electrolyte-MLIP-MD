@@ -58,9 +58,11 @@ def _sigma_model(T, fit):
 
 
 def _arrhenius_panel(ax, per_mlip, fits, yfunc):
-    """Draw MD points + Arrhenius fit curve + 300 K star on `ax`, mapping each
-    (sigma_mS_cm, T) to a y-value via yfunc(sigma, T). The caller owns the y-limits,
-    the experiment reference, axis labels and legend (which differ per y-axis choice)."""
+    """Draw MD points + Arrhenius fit + 300 K star, with a direct in-colour label beside each fit
+    line (no legend). yfunc maps (sigma, T) to the panel's y-value; the caller owns the y-limits,
+    the experiment reference and axis labels."""
+    label = {"mace": "MACE", "mattersim": "MatterSim"}
+    side = {"mace": 1, "mattersim": -1}          # +1 = label above its line, -1 = below
     Tgrid = np.linspace(290, 1100, 200)
     for mlip, rows in per_mlip.items():
         c = MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"])
@@ -80,6 +82,12 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
             ax.scatter([1000.0 / 300], [yfunc(fit["sigma300_mS_cm"], 300.0)], color=c,
                        marker="*", s=70, edgecolor=ps.PALETTE["neutral_black"],
                        linewidth=0.4, zorder=4)
+            s = side.get(mlip, 1)                # direct label beside the fit line (replaces legend)
+            x_lab, T_lab = 1.4, 1000.0 / 1.4
+            ax.annotate(label.get(mlip, mlip), (x_lab, yfunc(_sigma_model(T_lab, fit), T_lab)),
+                        textcoords="offset points", xytext=(0, 7 * s), ha="center",
+                        va="bottom" if s > 0 else "top", color=c, fontsize=ps.FS_ANNOT,
+                        fontweight="bold", zorder=5)
     ax.axvline(1000.0 / 300, ls=":", color=ps.PALETTE["neutral_mid"], lw=0.6)
 
 
@@ -89,12 +97,6 @@ def _plot_arrhenius(per_mlip, fits, path):
       (b) log10(sigma*T) -> a straight line, the textbook Arrhenius form fitted in
           ln(sigma*T) vs 1/T."""
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(ps.COL_DOUBLE_IN, 3.2))
-    from matplotlib.lines import Line2D
-    _pretty = {"mace": "MACE", "mattersim": "MatterSim"}
-    # one consolidated legend entry per potential (marker = MD point, line = Arrhenius fit)
-    mlip_handles = [Line2D([0], [0], color=MLIP_COLORS.get(m, ps.PALETTE["neutral_dark"]),
-                           marker="o", ms=3.6, mec="white", mew=0.4, lw=1.0,
-                           label=_pretty.get(m, m)) for m in per_mlip]
 
     # -- (a) log10 sigma : curved by the sigma = sigma*T / T factor --
     _arrhenius_panel(axL, per_mlip, fits, lambda s, T: np.log10(s))
@@ -104,14 +106,13 @@ def _plot_arrhenius(per_mlip, fits, path):
     yloL = min([np.log10(EXPT_MAIN)] + star_lo) - 0.25
     yhiL = max(np.log10(r["sigma_mS_cm"]) for rows in per_mlip.values() for r in rows) + 0.35
     axL.set_ylim(yloL, yhiL)
-    axL.text(1000.0 / 300, 1.01, "300 K", transform=axL.get_xaxis_transform(),
-             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="center", va="bottom")
+    axL.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=axL.get_xaxis_transform(),
+             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
     axL.axhline(np.log10(EXPT_MAIN), ls="--", color=EXPT_COLOR, lw=0.8)
     axL.text(0.015, np.log10(EXPT_MAIN) - 0.04, f"expt {EXPT_MAIN} mS cm$^{{-1}}$",
              color=EXPT_COLOR, fontsize=ps.FS_ANNOT, ha="left", va="top",
              transform=axL.get_yaxis_transform())
     axL.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma$  (mS cm$^{-1}$)")
-    axL.legend(handles=mlip_handles, loc="upper right")
     ps.add_panel_label(axL, "a")
 
     # -- (b) log10(sigma*T) : the straight line actually being fitted --
@@ -123,11 +124,13 @@ def _plot_arrhenius(per_mlip, fits, path):
         if f and np.isfinite(f.get("sigma300_mS_cm", np.nan))]
     yhiR = max(data_yT) + 0.35
     axR.set_ylim(min(ref_yT) - 0.25, yhiR)
-    axR.text(1000.0 / 300, 1.01, "300 K", transform=axR.get_xaxis_transform(),
-             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="center", va="bottom")
+    axR.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=axR.get_xaxis_transform(),
+             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
     # experiment is measured at room T only -> a single reference point at 300 K, not a line
     axR.scatter([1000.0 / 300], [yT(EXPT_MAIN, 300.0)], marker="X", s=40, color=EXPT_COLOR,
                 zorder=5)
+    axR.annotate("expt", (1000.0 / 300, yT(EXPT_MAIN, 300.0)), textcoords="offset points",
+                 xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
     # per-MLIP fit stats compacted into one corner box (kept out of the legend)
     stats = [f"{m}: $E_a$ {fits[m]['Ea_eV']:.2f} eV · $\\sigma_{{300}}$ "
              f"{fits[m]['sigma300_mS_cm']:.1f} · $R^2$ {fits[m]['R2']:.3f}"
@@ -136,8 +139,6 @@ def _plot_arrhenius(per_mlip, fits, path):
         axR.text(0.03, 0.03, "\n".join(stats), transform=axR.transAxes,
                  fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
     axR.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
-    expt_handle = Line2D([0], [0], color=EXPT_COLOR, marker="X", ms=5, lw=0, label="expt @300 K")
-    axR.legend(handles=mlip_handles + [expt_handle], loc="upper right")
     ps.add_panel_label(axR, "b")
     src_rows = []
     for m, rows in per_mlip.items():
