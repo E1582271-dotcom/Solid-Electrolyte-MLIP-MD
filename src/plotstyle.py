@@ -97,12 +97,14 @@ def add_panel_label(ax, letter, x=-0.08, y=1.04, fontsize=FS_PANEL, color=None,
 
 
 def finalize_figure(fig, out_path: str, formats=("png",), dpi: int = 600,
-                    pad: float = 0.6, close: bool = True):
+                    pad: float = 0.6, w_pad: float = None, close: bool = True):
     """tight_layout + save. Default = png only (600 dpi) to keep the repo light. For submission,
     regenerate the editable vector bundle with formats=("png","svg","pdf"): svg.fonttype='none' and
     pdf.fonttype=42 (set in apply_publication_style) keep the text selectable.
-    The out_path suffix is ignored -- one file per entry in `formats`. Returns the saved paths."""
-    fig.tight_layout(pad=pad)
+    The out_path suffix is ignored -- one file per entry in `formats`. Returns the saved paths.
+    ``w_pad`` (font-size multiples) adds horizontal breathing room between panels -- use for
+    multi-panel figures whose right panel has long y tick labels."""
+    fig.tight_layout(pad=pad, w_pad=w_pad)
     base = Path(out_path).with_suffix("")
     os.makedirs(base.parent, exist_ok=True)
     saved = []
