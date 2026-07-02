@@ -1,0 +1,58 @@
+{
+  "system": "Li8TiS6",
+  "baseline": true,
+  "fine_tuned": false,
+  "experiment_mS_cm": null,
+  "per_run": [
+    {
+      "mlip": "mace",
+      "T": 1000.0,
+      "D_cm2_s": 5.133435096596837e-05,
+      "sigma_mS_cm": 2816.511870565503,
+      "kinisi_D_cm2_s": 5.989154090392442e-05,
+      "kinisi_D_std_cm2_s": 4.781650842171117e-06,
+      "kinisi_sigma_mS_cm": 3286.0108821516183,
+      "kinisi_sigma_std_mS_cm": 262.3501827616889,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 600.0,
+      "D_cm2_s": 4.372230462094844e-08,
+      "sigma_mS_cm": 3.998115220969667,
+      "kinisi_D_cm2_s": 3.5618890576724585e-08,
+      "kinisi_D_std_cm2_s": 2.233850186572429e-08,
+      "kinisi_sigma_mS_cm": 3.257111668825988,
+      "kinisi_sigma_std_mS_cm": 2.042708066221652,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 800.0,
+      "D_cm2_s": 1.270015480334742e-05,
+      "sigma_mS_cm": 871.0087906186097,
+      "kinisi_D_cm2_s": 1.0104478816629753e-05,
+      "kinisi_D_std_cm2_s": 1.1358575959115578e-06,
+      "kinisi_sigma_mS_cm": 692.9907556390029,
+      "kinisi_sigma_std_mS_cm": 77.89999147641282,
+      "n_frames": 3000
+    }
+  ],
+  "arrhenius": {
+    "mace": {
+      "Ea_eV": 0.940103747565358,
+      "sigma300_mS_cm": 1.3794888169732335e-07,
+      "R2": 0.9633656567926816,
+      "n_points": 3,
+      "slope": -10909.450974943134,
+      "intercept": 26.27223641490426
+    }
+  },
+  "caveats": [
+    "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma (this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+    "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories give order-of-magnitude sigma only.",
+    "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+    "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+    "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius."
+  ]
+}
