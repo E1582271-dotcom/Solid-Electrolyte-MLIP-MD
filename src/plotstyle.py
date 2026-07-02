@@ -96,11 +96,11 @@ def add_panel_label(ax, letter, x=-0.08, y=1.04, fontsize=FS_PANEL, color=None,
             color=color or PALETTE["neutral_black"], ha="left", va="bottom")
 
 
-def finalize_figure(fig, out_path: str, formats=("png", "svg"), dpi: int = 600,
+def finalize_figure(fig, out_path: str, formats=("png", "svg", "pdf"), dpi: int = 600,
                     pad: float = 0.6, close: bool = True):
-    """tight_layout + save to png (embed) and svg (editable). The out_path suffix is
-    ignored -- one file per entry in `formats`. Returns the saved paths.
-    dpi=600 matches the project1/3 house standard for raster previews."""
+    """tight_layout + save to png (600-dpi preview), svg (editable) and pdf (editable vector,
+    the Nature-preferred submission format for line art; pdf.fonttype=42 keeps text selectable).
+    The out_path suffix is ignored -- one file per entry in `formats`. Returns the saved paths."""
     fig.tight_layout(pad=pad)
     base = Path(out_path).with_suffix("")
     os.makedirs(base.parent, exist_ok=True)
