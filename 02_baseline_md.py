@@ -77,12 +77,15 @@ def _plot_md(records, mlip, fig_dir, tag=""):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--mlip", default="both", choices=["mace", "mattersim", "both"])
+    ap.add_argument("--mlip", default="both", choices=["mace", "mattersim", "both", "lj"],
+                    help="'lj' = CPU plumbing fixture (non-physical), for local smoke tests")
     ap.add_argument("--temps", default="600,800,1000")
     ap.add_argument("--steps", type=int, default=50000, help="production MD steps (1 fs each)")
     ap.add_argument("--equilib", type=int, default=5000, help="equilibration steps before recording")
     ap.add_argument("--config", type=int, default=0, help="which config{N}.cif from 01")
     ap.add_argument("--supercell-tag", default="", help="e.g. '_sc222' to match a 01 supercell run")
+    ap.add_argument("--cif", default=None, help="explicit structure path (W11 leads: "
+                    "data/leads/lead_<key>.cif); overrides --config/--supercell-tag")
     ap.add_argument("--timestep", type=float, default=1.0)
     ap.add_argument("--log-every", type=int, default=50, help="steps between recorded frames")
     ap.add_argument("--mace-model", default="small",
@@ -104,12 +107,19 @@ def main():
     os.makedirs(traj_dir, exist_ok=True)
     os.makedirs(args.fig_dir, exist_ok=True)
 
-    cif = os.path.join(args.data_dir, f"config{args.config}{args.supercell_tag}.cif")
-    if not os.path.exists(cif):
-        sys.exit(f"missing {cif} -- run 01_build_structure.py first")
+    if args.cif:
+        cif = args.cif if os.path.isabs(args.cif) else os.path.join(HERE, args.cif)
+        if not os.path.exists(cif):
+            sys.exit(f"missing {cif} -- run 04_prepare_leads.py first")
+        src_label = os.path.basename(cif)
+    else:
+        cif = os.path.join(args.data_dir, f"config{args.config}{args.supercell_tag}.cif")
+        if not os.path.exists(cif):
+            sys.exit(f"missing {cif} -- run 01_build_structure.py first")
+        src_label = f"config {args.config}"
     atoms0 = read(cif)
     print(f"[02] cell: {atoms0.get_chemical_formula()}  {len(atoms0)} atoms  "
-          f"a={atoms0.cell.lengths()[0]:.3f} A  (config {args.config})")
+          f"a={atoms0.cell.lengths()[0]:.3f} A  ({src_label})")
     print(f"[02] BASELINE (un-fine-tuned) | {args.steps*args.timestep/1000:.0f} ps prod "
           f"+ {args.equilib*args.timestep/1000:.0f} ps equil | MLIPs={mlips} | T={temps}")
 
@@ -132,7 +142,8 @@ def main():
             print(f"     mean T={summ['mean_T']}K  E/atom={summ['mean_E_per_atom']}eV  "
                   f"drift={summ['drift_meV_atom_ps']} meV/atom/ps  "
                   f"{summ['n_frames']} frames  ({summ['wall_seconds']}s)")
-            records.append({"mlip": mlip, "config": args.config, **summ})
+            records.append({"mlip": mlip, "config": args.config,
+                            "cif": os.path.relpath(cif, HERE), **summ})
         fig = _plot_md(records, mlip, args.fig_dir, args.traj_tag)
         print(f"[02] {mlip} health figure -> {os.path.relpath(fig, HERE)}")
         # drop the bulky per-frame series before persisting metadata

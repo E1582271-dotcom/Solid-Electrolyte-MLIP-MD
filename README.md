@@ -87,3 +87,27 @@ python 03_analyze_transport.py
 - **未微调基线（52-atom）**：两个通用势 50 ps 时都系统性过预测单晶 σ（无晶界上界），MatterSim 比 MACE 轻一档；延长到 150 ps 两者都收敛下移——MACE 29.6→12.9（9.4×→4.1×）、R² 0.81→0.999，**MatterSim 16.0→2.06（5.1×→0.65×）、R² 0.85→0.983，收敛后反而是所有跑法里最接近实验的**——证实短跑的过预测/低温摆动是 MSD 采样噪声而非真·非阿伦尼乌斯。
 - **W8 生产（416-atom·200 ps·基座）**：更大胞 + 更长时间把 σ 收到 **5.57 mS/cm（1.8× 实验）**、R²=0.999、能量漂移 0.007 meV/atom/ps——纯 MLIP-MD 已达文献级一致。这是里程碑②核心交付。
 - **W7 微调（27 个 QE-Γ DFT 力标注 → SWA 微调，验证力 RMSE 234→62 meV/Å）**：势变硬（Eₐ 0.265→0.331 eV），σ 降到 **0.497 mS/cm（0.16×，欠预测 ~6×）**。基座**过预测**、微调**欠预测**恰把实验夹在中间（几何均值 ~1.7 mS/cm）；偏硬方向大概率源于 **Γ-only k 采样 + GBRV 赝势 + 27 构型小数据集**——诚实写进技术报告，作为"标注质量 → 势 → σ"敏感性的实证，也是下一步（更密 k 点 / 更多含迁移态构型）的动机。
+
+## W11：漏斗串联——把项目一/三的 lead 喂进同一条 MD 管道
+
+作品集闭环步：**项目一（MP 筛选+审计）和项目三（MatterGen 生成+S.U.N.）各交两条 lead**，用与
+Li₆PS₅Cl **完全相同的 baseline 协议**（MACE-MP-0 small、NVT Langevin、600/800/1000 K、150 ps
+收敛档）跑 σ/Eₐ——绝对值继承通用势偏差（Li₆PS₅Cl 上实测 1.8×），但**跨 lead 排序内部自洽**。
+
+| lead | 来源 | 结构 | 超胞 | 上游粗先验 log₁₀σ |
+|---|---|---|---|---|
+| Li₂₀Si₃P₃S₂₃Cl | P1 筛选（LGPS 族，literature-blank） | mp-1097035 | 200 原子 / 80 Li | −4.63 |
+| Li₈TiS₆ | P1 筛选（literature-blank） | mp-753546 | 120 原子 / 64 Li | −4.77 |
+| Li₃PS₄（新多形体） | P3 生成（e_hull=0.006，近乎在包上） | gen_016（MACE 弛豫胞） | 96 原子 / 36 Li | −6.83 |
+| LiPS₃（MLIP 新基态） | P3 生成（e_hull=−0.031） | gen_021（MACE 弛豫胞） | 120 原子 / 24 Li | −7.12 |
+
+```bash
+python 04_prepare_leads.py        # 结构获取+超胞+溯源清单 -> data/leads/（已提交，可直接用）
+# Vanda 提交（每 lead×温度一个 job，个人配额 4 并发）：见 run_leads.pbs 头部
+python 03_analyze_transport.py --traj-tag _lead_<key> --system <formula> --no-expt
+```
+
+**读法（诚实版）**：这些 lead 均无实验 σ 可对标（`--no-expt`），MD 在这里是**筛选级认证**——
+检验上游粗先验的排序、给出带误差棒的 Eₐ；不是生产级定量。微调势为 Li₆PS₅Cl 专属，此处刻意不用。
+产物：`data/metrics_lead_<key>.json` + `figures/03_arrhenius_lead_<key>.png`。溯源见
+`data/leads/leads.json`。

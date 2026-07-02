@@ -1,8 +1,8 @@
 #!/bin/bash
 # Runs INSIDE the Vanda pytorch_2.5_cuda_12.4_unsloth.sif container (called by run_md.pbs).
 # MACE 0.3.16 + ase live in ~/macepkg (installed against this container's py3.10/torch2.5).
-# Parameters arrive as env vars (set by run_md.pbs via SINGULARITYENV_*): MLIP TEMPS STEPS
-# EQUILIB LOG_EVERY TRAJ_TAG SUPERCELL_TAG MACE_MODEL (last two enable W8 supercell + W7 fine-tuned eval).
+# Parameters arrive as env vars (set by run_md.pbs / run_leads.pbs via SINGULARITYENV_*): MLIP TEMPS
+# STEPS EQUILIB LOG_EVERY TRAJ_TAG SUPERCELL_TAG MACE_MODEL LEAD_CIF (W11 leads: explicit structure).
 set -e
 # PKGBASE selects the user-site package tree (macepkg for MACE, mattersimpkg for MatterSim;
 # isolated so MatterSim's deps never clobber the working MACE install).
@@ -26,4 +26,5 @@ python3 02_baseline_md.py \
   --log-every "${LOG_EVERY:-50}" \
   --supercell-tag "${SUPERCELL_TAG:-}" \
   --mace-model "${MACE_MODEL:-small}" \
-  --traj-tag "${TRAJ_TAG:-}"
+  --traj-tag "${TRAJ_TAG:-}" \
+  ${LEAD_CIF:+--cif "$LEAD_CIF"}

@@ -27,7 +27,7 @@ from ase.md.velocitydistribution import (
     ZeroRotation,
 )
 
-SUPPORTED = ("mace", "mattersim")
+SUPPORTED = ("mace", "mattersim", "lj")
 
 
 def pick_device(prefer: Optional[str] = None) -> str:
@@ -50,12 +50,18 @@ def load_calculator(
     mattersim_model: Optional[str] = None,
     dtype: str = "float32",
 ):
-    """Return an ASE calculator for ``mlip`` in {'mace','mattersim'}.
+    """Return an ASE calculator for ``mlip`` in {'mace','mattersim','lj'}.
 
     - mace      : MACE-MP-0 (``mace_model`` 'small'|'medium'|'large'); float32 on T4.
     - mattersim : MatterSim universal potential (``mattersim_model`` optional load path).
+    - lj        : ASE Lennard-Jones -- a CPU plumbing fixture ONLY (same convention as
+                  project 3's stability.py): energies are meaningless, never a physics result.
     """
     mlip = mlip.lower()
+    if mlip == "lj":                      # before pick_device: no torch on the laptop
+        from ase.calculators.lj import LennardJones
+
+        return LennardJones()
     device = pick_device(device)
     if mlip == "mace":
         from mace.calculators import mace_mp

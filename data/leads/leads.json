@@ -1,0 +1,90 @@
+{
+  "protocol": {
+    "mlip": "MACE-MP-0 (small) baseline, un-fine-tuned -- same potential/protocol as the Li6PS5Cl baseline so the cross-lead ranking is internally consistent",
+    "md": "NVT Langevin, 1 fs, friction 0.01/fs, 600/800/1000 K, 150 ps + 10 ps equil (the tier at which the 52-atom Li6PS5Cl baseline was convergence-verified)",
+    "note": "sigma is screening-grade (order of magnitude + ranking), NOT production-grade; the Li6PS5Cl fine-tuned model is system-specific and deliberately NOT used here.",
+    "supercell_policy": "min edge 10.0 A, min 96 atoms"
+  },
+  "leads": {
+    "li20si3p3s23cl": {
+      "formula": "Li20Si3P3S23Cl",
+      "source": "mp-1097035",
+      "from_project": "project1_screening",
+      "provenance": "P1 MP screen + 15-hit adversarial audit (screen_audit.md); LGPS-family literature-blank lead. 3 polymorphs rank top-3 of the whole screen; this mp-id has the lowest MP e_above_hull (0.0305 eV/atom, band gap 2.31 eV). P1 predicted log10(sigma)=-4.63 (coarse prior).",
+      "unit_cell_atoms": 50,
+      "supercell": [
+        2,
+        2,
+        1
+      ],
+      "n_atoms": 200,
+      "n_Li": 80,
+      "abc_A": [
+        17.796,
+        17.544,
+        12.793
+      ],
+      "cif": "data/leads/lead_li20si3p3s23cl.cif"
+    },
+    "li8tis6": {
+      "formula": "Li8TiS6",
+      "source": "mp-753546",
+      "from_project": "project1_screening",
+      "provenance": "P1 MP screen lead #2 (literature-blank). MP e_above_hull=0.0035 eV/atom, band gap 2.29 eV, spacegroup 185. P1 predicted log10(sigma)=-4.77.",
+      "unit_cell_atoms": 30,
+      "supercell": [
+        2,
+        2,
+        1
+      ],
+      "n_atoms": 120,
+      "n_Li": 64,
+      "abc_A": [
+        13.704,
+        13.704,
+        13.335
+      ],
+      "cif": "data/leads/lead_li8tis6.cif"
+    },
+    "li3ps4_gen016": {
+      "formula": "Li3PS4",
+      "source": "relaxed_gen_016.cif",
+      "from_project": "project3_generative",
+      "provenance": "MatterGen Li-P-S conditional generation (Vanda job 1215079), label gen_016: NOVEL Li3PS4 polymorph (beta-Li3PS4 is a known fast-ion conductor), MACE self-consistent hull e_above_hull=0.006 eV/atom (essentially on-hull), S.U.N.=True. P3/P1 predicted log10(sigma)=-6.83.",
+      "unit_cell_atoms": 8,
+      "supercell": [
+        3,
+        2,
+        2
+      ],
+      "n_atoms": 96,
+      "n_Li": 36,
+      "abc_A": [
+        17.89,
+        11.93,
+        11.931
+      ],
+      "cif": "data/leads/lead_li3ps4_gen016.cif"
+    },
+    "lips3_gen021": {
+      "formula": "LiPS3",
+      "source": "relaxed_gen_021.cif",
+      "from_project": "project3_generative",
+      "provenance": "MatterGen label gen_021: LiPS3, MLIP-predicted NEW ground state (e_above_hull=-0.031 eV/atom on the MACE self-consistent hull), S.U.N.=True. P3/P1 predicted log10(sigma)=-7.12.",
+      "unit_cell_atoms": 10,
+      "supercell": [
+        3,
+        2,
+        2
+      ],
+      "n_atoms": 120,
+      "n_Li": 24,
+      "abc_A": [
+        19.478,
+        14.224,
+        14.323
+      ],
+      "cif": "data/leads/lead_lips3_gen021.cif"
+    }
+  }
+}

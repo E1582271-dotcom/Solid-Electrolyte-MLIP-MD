@@ -91,25 +91,27 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
     ax.axvline(1000.0 / 300, ls=":", color=ps.PALETTE["neutral_mid"], lw=0.6)
 
 
-def _plot_arrhenius(per_mlip, fits, path):
+def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
     """Arrhenius plot in the linear form that is actually fitted: log10(sigma*T) vs 1000/T
     (ln(sigma*T) = -Ea/kT + c). Points = MD (kinisi error bars), line = fit, star = 300 K
-    extrapolation, X = experiment; corner box gives Ea, sigma300, R^2. Single panel."""
+    extrapolation, X = experiment (omitted when expt_main is None, e.g. literature-blank
+    W11 leads); corner box gives Ea, sigma300, R^2. Single panel."""
     fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.2))
     yT = lambda s, T: np.log10(s * T)
     _arrhenius_panel(ax, per_mlip, fits, yT)
     data_yT = [yT(r["sigma_mS_cm"], r["T"]) for rows in per_mlip.values() for r in rows]
     # y-floor must clear the LOWEST 300 K reference (expt or a fit star, e.g. fine-tuned)
-    ref_yT = [yT(EXPT_MAIN, 300.0)] + [
+    ref_yT = ([yT(expt_main, 300.0)] if expt_main else []) + [
         yT(f["sigma300_mS_cm"], 300.0) for f in fits.values()
         if f and np.isfinite(f.get("sigma300_mS_cm", np.nan))]
     ax.set_ylim(min(ref_yT) - 0.25, max(data_yT) + 0.35)
     ax.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=ax.get_xaxis_transform(),
             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
-    # experiment is measured at room T only -> a single reference point at 300 K
-    ax.scatter([1000.0 / 300], [yT(EXPT_MAIN, 300.0)], marker="X", s=40, color=EXPT_COLOR, zorder=5)
-    ax.annotate("expt", (1000.0 / 300, yT(EXPT_MAIN, 300.0)), textcoords="offset points",
-                xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
+    if expt_main:
+        # experiment is measured at room T only -> a single reference point at 300 K
+        ax.scatter([1000.0 / 300], [yT(expt_main, 300.0)], marker="X", s=40, color=EXPT_COLOR, zorder=5)
+        ax.annotate("expt", (1000.0 / 300, yT(expt_main, 300.0)), textcoords="offset points",
+                    xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
     # per-MLIP fit stats in one corner box
     stats = [f"{m}: $E_a$ {fits[m]['Ea_eV']:.2f} eV · $\\sigma_{{300}}$ "
              f"{fits[m]['sigma300_mS_cm']:.1f} · $R^2$ {fits[m]['R2']:.3f}"
@@ -129,9 +131,9 @@ def _plot_arrhenius(per_mlip, fits, path):
     return ps.finalize_figure(fig, path)[0]
 
 
-def _plot_sigma300_bar(fits, path):
-    """Extrapolated sigma(300 K) vs experiment (single-column, log y). No chart title;
-    the material + fit provenance belong in the caption."""
+def _plot_sigma300_bar(fits, path, expt=EXPT):
+    """Extrapolated sigma(300 K) vs experiment (single-column, log y; expt bars omitted
+    when expt is falsy). No chart title; material + fit provenance belong in the caption."""
     fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.0))
     labels, vals, colors, cats = [], [], [], []
     pretty = {"mace": "MACE", "mattersim": "MatterSim"}   # run type is in the caption/filename
@@ -141,7 +143,7 @@ def _plot_sigma300_bar(fits, path):
             vals.append(fit["sigma300_mS_cm"])
             colors.append(MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"]))
             cats.append(pretty.get(mlip, mlip))
-    for name, v in EXPT.items():
+    for name, v in (expt or {}).items():
         lab = "sintered\n(expt)" if "sinter" in name else "mech.chem\n(expt)"
         labels.append(lab)
         vals.append(v)
@@ -168,7 +170,12 @@ def main():
     ap.add_argument("--log-every", type=int, default=50, help="fallback frame spacing")
     ap.add_argument("--traj-tag", default="", help="analyse data/traj{tag}/ + md_runs{tag}.json "
                     "and write 03_*{tag}/metrics{tag} (match 02's --traj-tag)")
+    ap.add_argument("--system", default="Li6PS5Cl", help="material label written to metrics "
+                    "(W11 leads: the lead formula)")
+    ap.add_argument("--no-expt", action="store_true", help="omit the Li6PS5Cl experimental "
+                    "references (W11 leads are literature-blank -- no expt sigma exists)")
     args = ap.parse_args()
+    expt, expt_main = (None, None) if args.no_expt else (EXPT, EXPT_MAIN)
     ps.apply_publication_style()
 
     traj_files = sorted(glob.glob(os.path.join(args.data_dir, f"traj{args.traj_tag}", "*.traj")))
@@ -213,9 +220,10 @@ def main():
         fit = tr.arrhenius_fit([r["T"] for r in rows], [r["sigma_mS_cm"] for r in rows])
         fits[mlip] = fit
         if np.isfinite(fit["Ea_eV"]):
-            ratio = fit["sigma300_mS_cm"] / EXPT_MAIN
+            vs = (f"(expt {expt_main}; ratio {fit['sigma300_mS_cm'] / expt_main:.2g}x)"
+                  if expt_main else "(no expt reference)")
             print(f"[03] {mlip}: Ea={fit['Ea_eV']:.3f} eV  sigma300={fit['sigma300_mS_cm']:.2e} "
-                  f"mS/cm  (expt {EXPT_MAIN}; ratio {ratio:.2g}x)  R2={fit['R2']:.3f}")
+                  f"mS/cm  {vs}  R2={fit['R2']:.3f}")
         else:
             print(f"[03] {mlip}: need >=2 temperatures for Arrhenius (have {fit['n_points']})")
 
@@ -223,30 +231,34 @@ def main():
     figs = {}
     if any(len(r) >= 1 for r in per_mlip.values()):
         figs["arrhenius"] = _plot_arrhenius(per_mlip, fits,
-                                            os.path.join(args.fig_dir, f"03_arrhenius{args.traj_tag}.png"))
+                                            os.path.join(args.fig_dir, f"03_arrhenius{args.traj_tag}.png"),
+                                            expt_main=expt_main)
     if any(np.isfinite(f.get("sigma300_mS_cm", np.nan)) for f in fits.values()):
-        figs["sigma300"] = _plot_sigma300_bar(fits,
-                                              os.path.join(args.fig_dir, f"03_sigma300_vs_expt{args.traj_tag}.png"))
+        name = f"03_sigma300{'_vs_expt' if expt else ''}{args.traj_tag}.png"
+        figs["sigma300"] = _plot_sigma300_bar(fits, os.path.join(args.fig_dir, name), expt=expt)
     for k, p in figs.items():
         print(f"[03] figure[{k}] -> {os.path.relpath(p, HERE)}")
 
+    caveats = [
+        "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma "
+        "(this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+        "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories "
+        "give order-of-magnitude sigma only.",
+        "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+        "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+        "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius.",
+    ]
+    if args.system == "Li6PS5Cl":
+        caveats.append("S/Cl disorder sampled by a few representative orderings, "
+                       "not the full ensemble.")
     metrics = {
-        "system": "Li6PS5Cl",
+        "system": args.system,
         "baseline": True,
         "fine_tuned": False,
-        "experiment_mS_cm": EXPT,
+        "experiment_mS_cm": expt,
         "per_run": all_rows,
         "arrhenius": fits,
-        "caveats": [
-            "Un-fine-tuned universal MLIP baseline: expect 2-40% bias in volume/D/sigma "
-            "vs experiment; fine-tuning is W7.",
-            "Thin MD (short trajectory): MSD statistics NOT converged -> sigma is "
-            "order-of-magnitude indicative only.",
-            "Nernst-Einstein ignores ion correlation (no Haven ratio).",
-            "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
-            "Argyrodite shows non-Arrhenius transport; linear extrapolation to 300 K adds error.",
-            "S/Cl disorder sampled by a few representative orderings, not the full ensemble.",
-        ],
+        "caveats": caveats,
     }
     with open(os.path.join(args.data_dir, f"metrics{args.traj_tag}.json"), "w") as f:
         json.dump(metrics, f, indent=2)
