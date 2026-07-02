@@ -1,8 +1,9 @@
 # Figures — Li₆PS₅Cl MLIP-MD ionic conductivity (Project 2)
 
-Publication figure set with legends + statistics/provenance, in the project's logical order. Each
-figure ships as **PNG (600 dpi) + SVG (editable, `svg.fonttype='none'`) + PDF (editable vector,
-`pdf.fonttype=42` — the submission format for line-art graphs; no TIFF, that's for photos)**, drawn at
+Publication figure set with legends + statistics/provenance, in the project's logical order. The repo
+tracks **PNG (600 dpi)**; the editable **SVG + vector PDF** submission bundle (`svg.fonttype='none'`,
+`pdf.fonttype=42`; no TIFF, that's for photos) is regenerated on demand via
+`finalize_figure(..., formats=("png","svg","pdf"))`. Figures are drawn at
 Nature column widths (single ≈89 mm, double ≈183 mm), 5–7 pt sans text, 8 pt bold lowercase panel
 letters, **full 4-sided box frame**, **direct in-colour curve labels (no legend boxes)**, kinisi
 error bars, restrained CVD-safe palette. Every quantitative figure has a `source_data/<name>.csv`.
