@@ -7,9 +7,9 @@ other figure in this portfolio (no Graphviz/draw.io).
 
 All four boxes' numbers are HARDCODED Python literals, each commented with its exact
 source file/field -- a deliberate choice: this script must render a complete, correct
-figure even when project2_mlip_md is cloned on its own (the common case for a GitHub
-visitor), without reading sibling repos at runtime. Cross-check the comments against the
-cited files before changing a number.
+figure even when this repo (Solid-Electrolyte-MLIP-MD) is cloned on its own (the common
+case for a GitHub visitor), without reading sibling repos at runtime. Cross-check the
+comments against the cited files before changing a number.
 
 Colors: P1=cool (PALETTE.blue_main), P3=warm (PALETTE.violet) -- the same provenance
 split 06_compare_leads.py uses for LEAD_COLORS; the two ranking-reversal callouts inside
@@ -102,7 +102,7 @@ def main():
            color=ps.PALETTE["neutral_black"])
     ax.text(3.95 + 1.575, 1.15 + 1.85 - 0.48, "Same-protocol MLIP-MD,\n4 funnel leads",
            ha="center", va="top", fontsize=ps.FS_ANNOT, color=ps.PALETTE["neutral_dark"])
-    # Ranking-reversal callouts: project2_mlip_md/source_data/fig06_compare_leads.csv
+    # Ranking-reversal callouts: source_data/fig06_compare_leads.csv (this repo)
     # LiPS3 (gen021): prior_rank 4, sigma300 10.19 mS/cm -> 2nd by sigma among the 4 leads
     ax.text(3.95 + 1.575, 1.15 + 0.62,
            "LiPS$_3$: prior rank 4th (worst) → MD rank 2nd (confirmed)",
