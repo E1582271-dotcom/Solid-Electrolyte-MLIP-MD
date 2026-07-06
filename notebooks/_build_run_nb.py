@@ -1,47 +1,60 @@
-"""生成合并版 00_motivation_run.ipynb：装包 → LiCl 单点能 → 600K MD → 弛豫 → 真实 Li6PS5Cl 单点能。
-用 json 写,保证 UTF-8 + 合法 JSON,避免复制粘贴乱码。一个文件上传 Colab 全部运行即可。"""
+"""Generates the merged 00_motivation_run.ipynb: install packages -> LiCl single-point
+energy -> 600K MD -> relaxation -> real Li6PS5Cl single-point energy.
+Written via json to guarantee valid UTF-8 JSON and avoid copy-paste mangling. Upload the
+one resulting file to Colab and Run all."""
 import json, os
 
 cells = []
 def md(src):   cells.append({"cell_type": "markdown", "metadata": {}, "source": src})
 def code(src): cells.append({"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": src})
 
-md("""# P0 动机 run — 你的第一个 ML 势工作流(一个文件全流程)
+md("""# P0 motivation run -- your first ML-potential workflow (one file, end to end)
 
-一次跑完四件事,建立"它真的能跑"的成就感 + 摸到后面算电导率要用的全部基本功:
-1. **单点能**:用预训练通用势 MACE-MP 给晶体算能量
-2. **分子动力学(MD)**:600K Langevin 恒温,看温度被稳住、能量不发散
-3. **结构弛豫**:把晶体揉皱,看 MLIP 沿受力把它推回低能量构型
-4. **真实体系**:从 Materials Project 拉真实 Li₆PS₅Cl,算单点能 —— 旗舰项目二的入口
+Runs four things back to back to build "this actually works" confidence + touch every
+basic skill needed later for the conductivity calculation:
+1. **Single-point energy**: compute a crystal's energy with the pretrained universal
+   potential MACE-MP
+2. **Molecular dynamics (MD)**: 600K Langevin thermostat, watch the temperature settle
+   and the energy stay bounded
+3. **Structure relaxation**: rattle a crystal, watch the MLIP push it back down to a
+   low-energy configuration along the force
+4. **A real system**: pull real Li6PS5Cl from Materials Project and compute its
+   single-point energy -- the entry point into flagship Project 2
 
-**用法**:Colab → `代码执行程序` → `更改运行时类型` → **T4 GPU** → 上传本文件 → `代码执行程序` → **全部运行**。
-**前置**:左侧 🔑 Secrets 里建好 `MP_API_KEY`(值=你的 MP key)并对本 notebook 开启「笔记本访问」。
-**血泪经验**:① 运行时必须切 GPU(cell 1 要 `CUDA: True`);② hello-world 用 float32,别用 float64(T4 双精度只有 1/32 算力)。""")
+**Usage**: Colab -> `Runtime` -> `Change runtime type` -> **T4 GPU** -> upload this file ->
+`Runtime` -> **Run all**.
+**Prerequisite**: create `MP_API_KEY` under the left-hand \U0001F511 Secrets panel (value = your MP
+key) and grant this notebook access to it.
+**Hard-won lessons**: ① the runtime must be switched to GPU (cell 1 needs `CUDA: True`);
+② use float32 for the hello-world, not float64 (a T4's double-precision throughput is only
+1/32 of its single-precision throughput).""")
 
-code("""# 1) 装包 + 确认 GPU(约 1-2 分钟)
+code("""# 1) Install packages + confirm GPU (~1-2 minutes)
 !pip install -q mace-torch mp-api ase pymatgen
 import torch
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'
 print('CUDA:', torch.cuda.is_available(), '| GPU:', gpu, '| device:', device)
-# 若是 False/CPU:更改运行时类型 → T4 GPU → 全部运行""")
+# If this prints False/CPU: Change runtime type -> T4 GPU -> Run all""")
 
-code("""# 2) 建小晶体 + 挂上 MACE-MP 通用势,算单点能
+code("""# 2) Build a small crystal + attach the MACE-MP universal potential, compute a single-point energy
 from ase.build import bulk
 from mace.calculators import mace_mp
 
-calc = mace_mp(model='small', dispersion=False, default_dtype='float32', device=device)  # 这个势对象后面复用
-atoms = bulk('LiCl', 'rocksalt', a=5.14) * (3, 3, 3)   # 3x3x3 超胞 = 216 原子
+calc = mace_mp(model='small', dispersion=False, default_dtype='float32', device=device)  # this calculator is reused below
+atoms = bulk('LiCl', 'rocksalt', a=5.14) * (3, 3, 3)   # 3x3x3 supercell = 216 atoms
 atoms.calc = calc
-print(len(atoms), '个原子')
-print('势能 =', round(atoms.get_potential_energy(), 3), 'eV')   # MACE-MP 一行算出能量""")
+print(len(atoms), 'atoms')
+print('Potential energy =', round(atoms.get_potential_energy(), 3), 'eV')   # one line, MACE-MP gives the energy""")
 
-md("""## (2) 分子动力学:600K 跑 2 ps,看恒温器把温度稳住
+md("""## (2) Molecular dynamics: run 2 ps at 600K, watch the thermostat settle the temperature
 
-- 一开始温度会**腰斩**(能量均分:动能往势能分一半);Langevin 恒温器再慢慢把它焐回 600K。
-- 温度大幅振荡是**真实物理**(有限尺寸热涨落 σ_T/T = √(2/3N)),不是噪声 —— 体系越大抖得越小。""")
+- The temperature will initially be **halved** (equipartition: kinetic energy splits half
+  into potential energy); the Langevin thermostat then slowly warms it back to 600K.
+- Large temperature oscillations are **real physics** (finite-size thermal fluctuation,
+  sigma_T/T = sqrt(2/3N)), not noise -- the larger the system, the smaller the swing.""")
 
-code("""# 3) 600K NVT(Langevin)MD,2000 步 x 1 fs = 2 ps,每 200 步打印进度
+code("""# 3) 600K NVT (Langevin) MD, 2000 steps x 1 fs = 2 ps, print progress every 200 steps
 import time
 from ase import units
 from ase.md.langevin import Langevin
@@ -59,89 +72,96 @@ def log():
         print(f"  step {s:4d}/2000  T={T[-1]:6.1f}K  E/atom={E[-1]:.4f}eV  ({time.time()-t0:.0f}s)")
 dyn.attach(log, interval=10)
 dyn.run(2000)
-print('完成,用时', round(time.time()-t0,1), '秒')""")
+print('Done, took', round(time.time()-t0,1), 'seconds')""")
 
-code("""# 4) 出图:温度应在 600K 附近大幅振荡、每原子能量应稳定不发散
+code("""# 4) Plot: temperature should oscillate strongly around 600K, energy per atom should stay stable, no blow-up
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 2, figsize=(10, 3.5))
 ax[0].plot(steps, T); ax[0].axhline(600, ls='--', c='r'); ax[0].set(xlabel='step', ylabel='T (K)', title='Temperature')
 ax[1].plot(steps, E); ax[1].set(xlabel='step', ylabel='E/atom (eV)', title='Potential energy')
 plt.tight_layout(); plt.show()""")
 
-md("""## (3) 结构弛豫:揉皱 → 让 MLIP 沿受力推回去
+md("""## (3) Structure relaxation: rattle -> let the MLIP push it back down along the force
 
-弛豫 = 沿着力(force = -∇E)把原子挪到能量极小点。MD 之外的另一半基本功。""")
+Relaxation = move the atoms along the force (force = -grad E) to a local energy minimum.
+The other half of the basic skill set besides MD.""")
 
-code("""# 5) 弛豫:故意把晶体揉皱,再让 MLIP 推回低能量构型
+code("""# 5) Relaxation: deliberately rattle a crystal, then let the MLIP push it back to a low-energy configuration
 from ase.optimize import BFGS
 
 relax_atoms = bulk('LiCl', 'rocksalt', a=5.14) * (2, 2, 2)
-relax_atoms.calc = calc                        # 复用同一个 MACE-MP 势
+relax_atoms.calc = calc                        # reuse the same MACE-MP calculator
 E0 = relax_atoms.get_potential_energy()
-relax_atoms.rattle(stdev=0.15, seed=0)         # 每个原子加 ~0.15 Å 随机位移
+relax_atoms.rattle(stdev=0.15, seed=0)         # add a ~0.15 A random displacement to each atom
 E_rattled = relax_atoms.get_potential_energy()
-BFGS(relax_atoms, logfile=None).run(fmax=0.02, steps=100)   # 弛豫到最大受力 < 0.02 eV/Å
+BFGS(relax_atoms, logfile=None).run(fmax=0.02, steps=100)   # relax until the max force < 0.02 eV/A
 E_relaxed = relax_atoms.get_potential_energy()
 
-print(f'理想晶体 E0        = {E0:.3f} eV')
-print(f'揉皱后   E_rattled = {E_rattled:.3f} eV   (升高 {E_rattled - E0:+.3f})')
-print(f'弛豫后   E_relaxed = {E_relaxed:.3f} eV   (回落到 E0 附近 = MLIP 把结构推回去了)')
-print(f'弛豫收敛 fmax = {abs(relax_atoms.get_forces()).max():.4f} eV/Å')""")
+print(f'Ideal crystal   E0        = {E0:.3f} eV')
+print(f'Rattled         E_rattled = {E_rattled:.3f} eV   (raised by {E_rattled - E0:+.3f})')
+print(f'Relaxed         E_relaxed = {E_relaxed:.3f} eV   (falls back near E0 = the MLIP pushed the structure back)')
+print(f'Relaxation converged, fmax = {abs(relax_atoms.get_forces()).max():.4f} eV/A')""")
 
-md("""## (4) 真实体系:从 Materials Project 拉 Li₆PS₅Cl,算单点能
+md("""## (4) A real system: pull Li6PS5Cl from Materials Project, compute its single-point energy
 
-正式接上旗舰项目二。Li₆PS₅Cl 是无序结构(Cl/S 在 4a/4c 位无序),今天先用最稳的**有序近似**;W5 再正式处理无序。""")
+This formally connects to flagship Project 2. Li6PS5Cl is a disordered structure (Cl/S
+disordered over the 4a/4c sites); today we start with the most stable **ordered
+approximant**, and handle the disorder properly starting W5.""")
 
-code("""# 6) 从 Materials Project 拉真实 Li6PS5Cl 结构
+code("""# 6) Pull the real Li6PS5Cl structure from Materials Project
 import os
 from mp_api.client import MPRester
 
 try:
     from google.colab import userdata
-    MP_API_KEY = userdata.get('MP_API_KEY')          # 从 Colab Secret 读,不硬编码
+    MP_API_KEY = userdata.get('MP_API_KEY')          # read from a Colab Secret, never hard-coded
 except Exception:
     MP_API_KEY = os.environ.get('MP_API_KEY')
-assert MP_API_KEY, "没读到 MP_API_KEY:检查左侧 Secrets 里是否建了 MP_API_KEY 并对本 notebook 开启访问"
+assert MP_API_KEY, "MP_API_KEY not found: check that MP_API_KEY is set under the left-hand Secrets panel and that this notebook has access enabled"
 
 with MPRester(MP_API_KEY) as mpr:
     docs = mpr.materials.summary.search(
         formula="Li6PS5Cl",
         fields=["material_id", "formula_pretty", "energy_above_hull", "symmetry", "structure"])
 
-print(f"找到 {len(docs)} 个 Li6PS5Cl 条目")
+print(f"Found {len(docs)} Li6PS5Cl entries")
 ordered = [d for d in docs if d.energy_above_hull is not None and d.structure.is_ordered]
-print(f"其中有序(可直接跑)的有 {len(ordered)} 个:")
+print(f"{len(ordered)} of them are ordered (directly runnable):")
 for d in sorted(ordered, key=lambda x: x.energy_above_hull):
     sg = d.symmetry.symbol if d.symmetry else '?'
-    print(f"  {d.material_id:12s}  E_hull={d.energy_above_hull:.3f} eV/atom  {sg}  {len(d.structure)} 原子")
+    print(f"  {d.material_id:12s}  E_hull={d.energy_above_hull:.3f} eV/atom  {sg}  {len(d.structure)} atoms")
 
 if ordered:
     best = min(ordered, key=lambda x: x.energy_above_hull)
     struct = best.structure
     print()
-    print(f"→ 选中最稳定的有序近似: {best.material_id}  ({len(struct)} 原子/原胞)")
+    print(f"-> Selected the most stable ordered approximant: {best.material_id}  ({len(struct)} atoms/cell)")
 else:
     from pymatgen.transformations.standard_transformations import OrderDisorderedStructureTransformation
     valid = [d for d in docs if d.energy_above_hull is not None]
     best = min(valid, key=lambda x: x.energy_above_hull)
     print()
-    print(f"全是无序条目,对最稳的 {best.material_id} 做有序化...")
+    print(f"All entries are disordered; ordering the most stable one, {best.material_id}...")
     struct = OrderDisorderedStructureTransformation().apply_transformation(best.structure)
-    print(f"→ 有序化完成: {len(struct)} 原子/原胞")""")
+    print(f"-> Ordering complete: {len(struct)} atoms/cell")""")
 
-code("""# 7) 给真实 Li6PS5Cl 算 MACE-MP 单点能(和上面 LiCl 同一套机器,只是体系换成旗舰目标)
+code("""# 7) Compute a MACE-MP single-point energy for the real Li6PS5Cl (same machinery as LiCl above, just a different, flagship, system)
 real = struct.to_ase_atoms()
-real.calc = calc                               # 复用同一个 MACE-MP 势
+real.calc = calc                               # reuse the same MACE-MP calculator
 e = real.get_potential_energy()
-print("化学式 =", real.get_chemical_formula(), "| 原子数 =", len(real))
-print(f"MACE-MP 单点能 = {e:.3f} eV  ({e/len(real):.4f} eV/atom)")
-print(f"最大受力 fmax  = {abs(real.get_forces()).max():.3f} eV/Å  (未弛豫,不为 0 正常)")""")
+print("Formula =", real.get_chemical_formula(), "| atoms =", len(real))
+print(f"MACE-MP single-point energy = {e:.3f} eV  ({e/len(real):.4f} eV/atom)")
+print(f"Max force fmax  = {abs(real.get_forces()).max():.3f} eV/A  (unrelaxed, nonzero is expected)")""")
 
-md("""## 全跑通了 = 环境就绪 + 四项基本功到手
+md("""## Everything ran = environment ready + all four basic skills in hand
 
-你已经能:**算单点能 / 跑 MD / 做弛豫 / 从数据库拉真实结构喂给 ML 势**。这就是 capstone 算 Li⁺ 电导率的同一套机器。
+You can now: **compute a single-point energy / run MD / relax a structure / pull a real
+structure from a database and feed it to an ML potential**. This is the exact same
+machinery the capstone uses to compute Li+ conductivity.
 
-**下一步(W5)**:正式处理 Li₆PS₅Cl 的无序 —— 枚举构型、多温 MD、从轨迹算 Li⁺ 扩散 → Nernst-Einstein 得电导率 → Arrhenius 外推 300K。""")
+**Next (W5)**: formally handle Li6PS5Cl's disorder -- enumerate configurations,
+multi-temperature MD, compute Li+ diffusion from the trajectories -> Nernst-Einstein for
+conductivity -> Arrhenius extrapolation to 300K.""")
 
 nb = {"cells": cells, "metadata": {"language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "00_motivation_run.ipynb")

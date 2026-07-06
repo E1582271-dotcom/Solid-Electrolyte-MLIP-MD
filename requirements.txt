@@ -1,0 +1,23 @@
+# Project 2 -- Solid-Electrolyte-MLIP-MD (Li6PS5Cl ionic conductivity)
+# Install:  pip install -r requirements.txt      (Python >= 3.10)
+# Version floors are conservative for broad installability; parentheses note the
+# versions this project was developed/tested against.
+#
+# This covers the LOCAL/CPU side only -- structure building (01, 05) and transport
+# analysis (03, 06, 07, 08). MD itself (02) needs the heavy GPU stack below, installed
+# separately on a GPU host (Colab/Vanda), never on the laptop -- see README.md.
+
+numpy>=1.24                       # (dev 2.5.0)
+pandas>=2.0                       # (dev 3.0.3)
+matplotlib>=3.7                   # (dev 3.11.0)
+pymatgen>=2024.1                  # structures, Ewald enumeration, phase diagrams  (dev 2026.5.4)
+pymatgen-analysis-diffusion>=2023.8   # DiffusionAnalyzer backbone (D, sigma)     (dev 2025.11.15)
+ase>=3.22                         # Atoms / Trajectory I/O                          (dev 3.29.0)
+kinisi>=2.0                       # Bayesian-bootstrap diffusion error bars         (dev 2.0.5)
+scipp>=24.0                       # kinisi's typed-array dependency                 (dev 26.3.1)
+mp-api>=0.40                      # Materials Project structure fetch               (dev 0.46.4)
+
+# --- GPU side (Colab / Vanda only; not installed in the local venv) -------------
+# torch                            # backend for mace-torch and mattersim
+# mace-torch                       # MACE-MP-0 universal potential
+# mattersim                        # MatterSim universal potential
