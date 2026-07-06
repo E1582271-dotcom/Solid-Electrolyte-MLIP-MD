@@ -1,4 +1,4 @@
-# Project 2 (★ Flagship, highest signal): sulfide MLIP + MD ionic conductivity pipeline
+# Project 2 sulfide MLIP + MD ionic conductivity pipeline
 
 **Positioning**: the deep flagship, aimed directly at the core method stack used by domestic
 sulfide solid-state-battery computational groups. Planned weeks W5–W9, milestone ②.
