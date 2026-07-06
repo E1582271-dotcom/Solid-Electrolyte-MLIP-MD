@@ -1,0 +1,58 @@
+{
+  "system": "Li5.25PS4.25Cl1.75",
+  "baseline": true,
+  "fine_tuned": false,
+  "experiment_mS_cm": null,
+  "per_run": [
+    {
+      "mlip": "mace",
+      "T": 1000.0,
+      "D_cm2_s": 0.0001014201889974662,
+      "sigma_mS_cm": 3645.5704550907626,
+      "kinisi_D_cm2_s": 9.630886191810025e-05,
+      "kinisi_D_std_cm2_s": 6.7113125564143506e-06,
+      "kinisi_sigma_mS_cm": 3461.8427064932193,
+      "kinisi_sigma_std_mS_cm": 241.2395698765171,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 600.0,
+      "D_cm2_s": 3.1750580222192035e-05,
+      "sigma_mS_cm": 1902.135697934596,
+      "kinisi_D_cm2_s": 3.161064487387566e-05,
+      "kinisi_D_std_cm2_s": 1.9306763745125765e-06,
+      "kinisi_sigma_mS_cm": 1893.7523543996817,
+      "kinisi_sigma_std_mS_cm": 115.66429424028256,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 800.0,
+      "D_cm2_s": 6.166383418717109e-05,
+      "sigma_mS_cm": 2770.6496887170915,
+      "kinisi_D_cm2_s": 5.541818862211823e-05,
+      "kinisi_D_std_cm2_s": 3.878375435116345e-06,
+      "kinisi_sigma_mS_cm": 2490.0233512738855,
+      "kinisi_sigma_std_mS_cm": 174.26129649052373,
+      "n_frames": 3000
+    }
+  ],
+  "arrhenius": {
+    "mace": {
+      "Ea_eV": 0.1488077629767146,
+      "sigma300_mS_cm": 210.7367554890031,
+      "R2": 0.9962951082912221,
+      "n_points": 3,
+      "slope": -1726.8423821197064,
+      "intercept": 16.810533498640922
+    }
+  },
+  "caveats": [
+    "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma (this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+    "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories give order-of-magnitude sigma only.",
+    "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+    "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+    "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius."
+  ]
+}

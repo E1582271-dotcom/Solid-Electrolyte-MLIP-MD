@@ -25,14 +25,21 @@ cell (MP mp-985592), free-anion S²⁻/Cl⁻ disorder resolved by Ewald enumerat
 element (Li/P/S/Cl legend), dashed unit cell. *Stats:* deterministic structures (none).
 *Source:* `source_data/01_structures.csv`.
 
-**Fig. 2 | Production conductivity (416-atom, foundation MACE-MP-0).** `figures/03_arrhenius_prod.*`
-+ `figures/03_sigma300_vs_expt_prod.*` — *[headline result]*
+**Fig. 2 | Production conductivity (416-atom, foundation MACE-MP-0 vs MatterSim).**
+`figures/03_arrhenius_prod.*` + `figures/03_sigma300_vs_expt_prod.*` — *[headline result]*
 Arrhenius plot in the linear form (log₁₀ σT vs 1000/T — points=MD, line=fit, ★=300 K extrapolation,
-✕=experiment) + the σ(300 K) bar vs experiment. 2×2×2 supercell, 200 ps, three temperatures. **Result: σ(300 K)=5.57 mS cm⁻¹ (1.8×
-experiment), Eₐ=0.265 eV, R²=0.999** — near-literature agreement from a pure, un-fine-tuned MLIP.
-*Stats:* n=1 trajectory per T; centre = pymatgen DiffusionAnalyzer D → Nernst-Einstein σ; error bars =
-kinisi bootstrap 1σ on D (GLS, MSD autocorrelation) propagated to σ; Arrhenius = OLS of ln(σT) vs 1/T
-(3 T). *Source:* `source_data/03_arrhenius_prod.csv`, `03_sigma300_vs_expt_prod.csv`.
+✕=experiment) + the σ(300 K) bars vs experiment, one pair of curves/bars per potential. 2×2×2
+supercell, 200 ps, three temperatures, both potentials. **Result: MACE σ(300 K)=5.57 mS cm⁻¹ (1.8×
+experiment), Eₐ=0.265 eV, R²=0.999 — near-literature agreement from a pure, un-fine-tuned MLIP.
+MatterSim σ(300 K)=0.42 mS cm⁻¹ (0.13×), Eₐ=0.338 eV, R²=0.991 — under-predicts, and more severely
+than its own 52-atom/150 ps run (0.65×, the closest-to-experiment run in Fig. S2). The two
+potentials sit on opposite sides of experiment at both convergence tiers, but their bias moves in
+opposite directions with better sampling: MACE's over-prediction shrinks toward experiment
+(9.4×/4.1× → 1.8×, Fig. S2 → Fig. 2), while MatterSim's under-prediction grows worse (0.65× →
+0.13×) — more atoms/longer time converges MACE toward the truth but pulls MatterSim away from it.**
+*Stats:* n=1 trajectory per T per potential; centre = pymatgen DiffusionAnalyzer D → Nernst-Einstein
+σ; error bars = kinisi bootstrap 1σ on D (GLS, MSD autocorrelation) propagated to σ; Arrhenius = OLS
+of ln(σT) vs 1/T (3 T). *Source:* `source_data/03_arrhenius_prod.csv`, `03_sigma300_vs_expt_prod.csv`.
 
 **Fig. 3 | DFT fine-tuning of MACE-MP-0.** `figures/04_finetune_convergence.*` +
 `figures/03_arrhenius_ft.*` + `figures/03_sigma300_vs_expt_ft.*` — *[fine-tuning + its effect]*
@@ -45,14 +52,28 @@ validation (seed 0); metric = held-out validation RMSE; baseline = MACE-MP-0 sma
 no test set (small-data delta fine-tune). *Source:* `source_data/04_finetune_convergence.csv`,
 `03_arrhenius_ft.csv`, `03_sigma300_vs_expt_ft.csv`.
 
+**Fig. 4 | Cl-excess doping trend.** `figures/07_doping_trend.*` — *[composition-property trend]*
+(**a**) σ(300 K) vs Cl content in Li₆₋ₓPS₅₋ₓCl₁₊ₓ (x=0/0.25/0.5/0.75), log y — ~29× monotonic
+increase. (**b**) Eₐ vs Cl content, linear y — monotonic decrease (0.256→0.149 eV). Same MACE-MP-0
+(small) / NVT Langevin / 600–800–1000 K / 150 ps protocol as the W11 funnel leads (Fig. S2-tier, not
+the 416-atom/200 ps production tier of Fig. 2) — the Cl=1.0 anchor here (7.34 mS cm⁻¹) is therefore
+not the production Li₆PS₅Cl baseline (5.57 mS cm⁻¹); same order of magnitude, different convergence
+tier, not a discrepancy. *Stats:* as Fig. 2 (kinisi bootstrap error bars, OLS Arrhenius fit, 3 T per
+composition). *Source:* `source_data/07_doping_trend.csv`.
+
 ## Supplementary figures
 
-**Fig. S1 | MD conservation check.** `figures/02_md_stability_mace{,_prod,_ft}.*` — *[method validation]*
+**Fig. S1 | MD conservation check.**
+`figures/02_md_stability_mace{,_prod,_ft}.*` + `figures/02_md_stability_mattersim_prod.*` —
+*[method validation]*
 (**a**) instantaneous temperature, (**b**) potential energy per atom vs time; direct-labelled 600/800/
-1000 K traces, dashed = target T. Confirms stable NVT thermostatting, no drift/blow-up. Variants:
-baseline (52-atom, 50 ps), `_prod` (416-atom, 200 ps), `_ft` (416-atom, 200 ps, fine-tuned; energies
-on the fine-tuned QE reference ≈ −269 eV/atom). *Stats:* n=1 Langevin-NVT trajectory per T (friction
-0.01 fs⁻¹, 1 fs step, log every 50). *Source:* `source_data/02_md_stability_mace{,_prod,_ft}.csv`.
+1000 K traces, dashed = target T. Confirms stable NVT thermostatting, no drift/blow-up, for **both**
+production-tier potentials (MACE and MatterSim, 416-atom/200 ps) as well as the 52-atom baseline and
+fine-tuned variants. Variants: baseline (52-atom, 50 ps, MACE), `_prod` (416-atom, 200 ps, MACE and
+MatterSim), `_ft` (416-atom, 200 ps, fine-tuned MACE; energies on the fine-tuned QE reference ≈ −269
+eV/atom). *Stats:* n=1 Langevin-NVT trajectory per T per potential (friction 0.01 fs⁻¹, 1 fs step, log
+every 50). *Source:* `source_data/02_md_stability_mace{,_prod,_ft}.csv`,
+`source_data/02_md_stability_mattersim_prod.csv`.
 
 **Fig. S2 | Baseline transport & sampling convergence.** `figures/03_arrhenius{,_long}.*` +
 `figures/03_sigma300_vs_expt{,_long}.*` — *[baseline → convergence]*
@@ -62,3 +83,10 @@ over-predict single-crystal σ at 50 ps; extending to 150 ps converges them down
 the closest-to-experiment run)** — showing the short-run over-prediction is largely unconverged-MSD
 statistics, not physics. *Stats:* as Fig. 2. *Source:* `source_data/03_arrhenius{,_long}.csv`,
 `03_sigma300_vs_expt{,_long}.csv`.
+
+**Fig. S3 | Per-composition Arrhenius, Cl-excess series.**
+`figures/03_arrhenius_dope_cl{100,125,150,175}.*` + `figures/03_sigma300_dope_cl{100,125,150,175}.*`
+— *[Fig. 4 variants]* The four single-composition Arrhenius fits (log₁₀ σT vs 1000/T) and σ(300 K)
+bars underlying Fig. 4's trend, one per Cl content (`--no-expt`: no per-composition experimental
+reference exists for the non-anchor compositions). *Stats:* as Fig. 2. *Source:*
+`source_data/03_arrhenius_dope_cl{100,125,150,175}.csv`, `03_sigma300_dope_cl{100,125,150,175}.csv`.

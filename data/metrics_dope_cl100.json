@@ -1,0 +1,59 @@
+{
+  "system": "Li6PS5Cl",
+  "baseline": true,
+  "fine_tuned": false,
+  "experiment_mS_cm": null,
+  "per_run": [
+    {
+      "mlip": "mace",
+      "T": 1000.0,
+      "D_cm2_s": 5.584109457989094e-05,
+      "sigma_mS_cm": 2293.965858758333,
+      "kinisi_D_cm2_s": 5.660169223940728e-05,
+      "kinisi_D_std_cm2_s": 3.293797513591196e-06,
+      "kinisi_sigma_mS_cm": 2325.2113971258827,
+      "kinisi_sigma_std_mS_cm": 135.31000956708047,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 600.0,
+      "D_cm2_s": 7.659047859581003e-06,
+      "sigma_mS_cm": 524.392607053287,
+      "kinisi_D_cm2_s": 6.810754747073438e-06,
+      "kinisi_D_std_cm2_s": 4.935008289689628e-07,
+      "kinisi_sigma_mS_cm": 466.31245858460704,
+      "kinisi_sigma_std_mS_cm": 33.78855845146134,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 800.0,
+      "D_cm2_s": 2.5768741789798594e-05,
+      "sigma_mS_cm": 1323.2327897061912,
+      "kinisi_D_cm2_s": 2.150766208120856e-05,
+      "kinisi_D_std_cm2_s": 1.5451500756320245e-06,
+      "kinisi_sigma_mS_cm": 1104.4250405366065,
+      "kinisi_sigma_std_mS_cm": 79.34393001301736,
+      "n_frames": 3000
+    }
+  ],
+  "arrhenius": {
+    "mace": {
+      "Ea_eV": 0.2561922128613378,
+      "sigma300_mS_cm": 7.340909949728969,
+      "R2": 0.999738024324119,
+      "n_points": 3,
+      "slope": -2972.987176799497,
+      "intercept": 17.607202536949856
+    }
+  },
+  "caveats": [
+    "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma (this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+    "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories give order-of-magnitude sigma only.",
+    "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+    "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+    "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius.",
+    "S/Cl disorder sampled by a few representative orderings, not the full ensemble."
+  ]
+}

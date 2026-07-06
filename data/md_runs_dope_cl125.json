@@ -1,0 +1,23 @@
+{
+  "baseline": true,
+  "fine_tuned": false,
+  "runs": [
+    {
+      "mlip": "mace",
+      "config": 0,
+      "cif": "data/doped/dope_cl125.cif",
+      "temperature_K": 800.0,
+      "n_steps": 150000,
+      "timestep_fs": 1.0,
+      "production_ps": 150.0,
+      "log_every": 50,
+      "n_frames": 3001,
+      "mean_T": 801.2,
+      "std_T": 32.8,
+      "mean_E_per_atom": -4.0291,
+      "drift_meV_atom_ps": -0.007,
+      "wall_seconds": 6304.4,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_dope_cl125/mace_800K.traj"
+    }
+  ]
+}

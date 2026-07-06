@@ -6,6 +6,18 @@ Palette + rcParams adapted from the `nature-figure` skill (static layer): restra
 publication palette, Arial sans-serif, top/right spines off, frameless legends, and
 editable-text SVG export (svg.fonttype='none'). import-only; call apply_publication_style()
 once before creating figures.
+
+=============================================================================
+AI4SSB SHARED PLOTSTYLE -- CORE (byte-identical across all 3 portfolio repos)
+Canonical source: project2_mlip_md/src/plotstyle.py (this file)
+Also vendored (physical copy, not import -- each repo must stay independently
+cloneable/runnable) into project1_screening/src/plotstyle.py and
+project3_generative/src/plotstyle.py.
+CORE_VERSION = "1.0.0"          Last synced: 2026-07-05
+Everything from here down to "END CORE" must stay byte-identical in all three
+copies. If you change any of it, bump CORE_VERSION + the sync date in THIS
+file and in the other two repos' copies, in the same sitting.
+=============================================================================
 """
 from __future__ import annotations
 
@@ -28,22 +40,6 @@ PALETTE = {
     "neutral_dark": "#4D4D4D",
     "neutral_black": "#272727",
 }
-
-# Temperature is a *sequential* physical variable -> cool->warm perceptual ramp.
-TEMP_COLORS = {
-    600: PALETTE["blue_main"],   # cold = deep blue
-    800: PALETTE["violet"],      # mid  = violet
-    1000: PALETTE["red_strong"],  # hot  = red
-}
-
-# Two compared universal potentials -> two distinct, non-delta method colors.
-MLIP_COLORS = {
-    "mace": PALETTE["blue_main"],
-    "mattersim": PALETTE["violet"],
-}
-
-# Experiment / reference is a neutral target line, never a "method" color.
-EXPT_COLOR = PALETTE["neutral_black"]
 
 # ── Nature journal-final geometry (inches) & font sizes (pt at final print size) ──
 # Nature column widths: single 89 mm, double 183 mm; max height 247 mm.
@@ -132,3 +128,26 @@ def save_source_data(fig_path: str, columns, rows, subdir: str = "source_data"):
         w.writerow(columns)
         w.writerows(rows)
     return str(out)
+
+
+# =============================================================================
+# END CORE -- everything below is this repo's own semantic palette layer.
+# Free to diverge from project1_screening / project3_generative; does not need
+# to match the other two repos.
+# =============================================================================
+
+# Temperature is a *sequential* physical variable -> cool->warm perceptual ramp.
+TEMP_COLORS = {
+    600: PALETTE["blue_main"],   # cold = deep blue
+    800: PALETTE["violet"],      # mid  = violet
+    1000: PALETTE["red_strong"],  # hot  = red
+}
+
+# Two compared universal potentials -> two distinct, non-delta method colors.
+MLIP_COLORS = {
+    "mace": PALETTE["blue_main"],
+    "mattersim": PALETTE["violet"],
+}
+
+# Experiment / reference is a neutral target line, never a "method" color.
+EXPT_COLOR = PALETTE["neutral_black"]

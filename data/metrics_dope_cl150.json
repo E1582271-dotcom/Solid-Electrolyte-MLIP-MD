@@ -1,0 +1,58 @@
+{
+  "system": "Li5.5PS4.5Cl1.5",
+  "baseline": true,
+  "fine_tuned": false,
+  "experiment_mS_cm": null,
+  "per_run": [
+    {
+      "mlip": "mace",
+      "T": 1000.0,
+      "D_cm2_s": 7.807376792646243e-05,
+      "sigma_mS_cm": 2940.0154041104092,
+      "kinisi_D_cm2_s": 7.991902716196947e-05,
+      "kinisi_D_std_cm2_s": 5.408171950414075e-06,
+      "kinisi_sigma_mS_cm": 3009.502130843998,
+      "kinisi_sigma_std_mS_cm": 203.65494409430207,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 600.0,
+      "D_cm2_s": 2.2718778772369798e-05,
+      "sigma_mS_cm": 1425.8643102818808,
+      "kinisi_D_cm2_s": 1.9478064250284887e-05,
+      "kinisi_D_std_cm2_s": 1.2182098638021215e-06,
+      "kinisi_sigma_mS_cm": 1222.4722519696252,
+      "kinisi_sigma_std_mS_cm": 76.45666101301664,
+      "n_frames": 3000
+    },
+    {
+      "mlip": "mace",
+      "T": 800.0,
+      "D_cm2_s": 5.317382628459219e-05,
+      "sigma_mS_cm": 2502.951255654793,
+      "kinisi_D_cm2_s": 2.8081109201967192e-05,
+      "kinisi_D_std_cm2_s": 2.674908558921258e-06,
+      "kinisi_sigma_mS_cm": 1321.8091013625124,
+      "kinisi_sigma_std_mS_cm": 125.91092656150882,
+      "n_frames": 3000
+    }
+  ],
+  "arrhenius": {
+    "mace": {
+      "Ea_eV": 0.16123031223197537,
+      "sigma300_mS_cm": 128.59318471394212,
+      "R2": 0.9949149666251679,
+      "n_points": 3,
+      "slope": -1871.000080070657,
+      "intercept": 16.797103222620677
+    }
+  },
+  "caveats": [
+    "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma (this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+    "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories give order-of-magnitude sigma only.",
+    "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+    "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+    "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius."
+  ]
+}

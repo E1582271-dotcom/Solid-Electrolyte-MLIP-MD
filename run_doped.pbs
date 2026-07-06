@@ -1,0 +1,44 @@
+#!/bin/bash
+# W9 Cl-excess doping trend MD on Vanda A40 (Project 2): run the SAME baseline protocol as
+# Li6PS5Cl on the doped cells from 05_build_doped.py. Personal FREE budget -> no -P.
+# ONE JOB PER (COMPOSITION, TEMP); up to 4 GPU jobs run concurrently.
+#
+# Prep (once, laptop):  python 05_build_doped.py   -> data/doped/dope_<cltag>.cif (committed)
+# Submit (login node, from ~/AI4SSB/project2_mlip_md):
+#   for D in cl100 cl125 cl150 cl175; do
+#     for T in 600 800 1000; do
+#       qsub -N "w9_${D}_$T" -v DOPE=$D,TEMPS=$T,STEPS=150000,EQUILIB=10000 run_doped.pbs
+#     done
+#   done
+# Analyse (after all 3 temps of a composition finish; CPU, laptop or login node):
+#   python 03_analyze_transport.py --traj-tag _dope_<cltag> --system <formula> --no-expt
+#PBS -N w9_dope
+#PBS -l select=1:ngpus=1:ncpus=36:mem=240gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR"
+if [ -z "$DOPE" ]; then echo "[pbs] ERROR: qsub -v DOPE=<cltag> required"; exit 1; fi
+if [ ! -f "data/doped/dope_${DOPE}.cif" ]; then
+  echo "[pbs] ERROR: data/doped/dope_${DOPE}.cif missing -- git pull / run 05_build_doped.py"; exit 1
+fi
+echo "[pbs] host=$(hostname) start=$(date)"
+echo "[pbs] DOPE=$DOPE TEMPS=${TEMPS:-800} STEPS=${STEPS:-150000} EQUILIB=${EQUILIB:-10000}"
+
+module load singularity
+IMG=/app1/common/singularity-img/vanda/pytorch_2.5_cuda_12.4_unsloth.sif
+
+export SINGULARITYENV_MLIP="${MLIP:-mace}"
+export SINGULARITYENV_TEMPS="${TEMPS:-800}"
+export SINGULARITYENV_STEPS="${STEPS:-150000}"
+export SINGULARITYENV_EQUILIB="${EQUILIB:-10000}"
+export SINGULARITYENV_LOG_EVERY="${LOG_EVERY:-50}"
+export SINGULARITYENV_PKGBASE="${PKGBASE:-macepkg}"
+export SINGULARITYENV_MACE_MODEL="${MACE_MODEL:-small}"      # baseline on purpose: the Li6PS5Cl
+                                                             # fine-tuned model is composition-specific
+export SINGULARITYENV_LEAD_CIF="data/doped/dope_${DOPE}.cif" # run_in_container.sh passes this as --cif
+export SINGULARITYENV_TRAJ_TAG="_dope_${DOPE}"
+
+# NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
+singularity exec "$IMG" bash run_in_container.sh
+echo "[pbs] end=$(date)"

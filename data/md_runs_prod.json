@@ -1,6 +1,7 @@
 {
   "baseline": true,
   "fine_tuned": false,
+  "note": "mace@800/1000 lack full per-run stats (mean_T/drift/wall_seconds) -- an earlier qsub-per-temperature submission overwrote this file each run, and only the last-finishing temperature's record survived (documented risk, see 08_pipeline_overview.py-era session notes). timestep_fs/log_every (the only fields 03_analyze_transport.py's _load_run_params() actually needs) are correct for all six runs -- every run in this project used the same 1 fs / log-every-50 protocol, so analysis results are unaffected.",
   "runs": [
     {
       "mlip": "mace",
@@ -17,6 +18,73 @@
       "drift_meV_atom_ps": 0.007,
       "wall_seconds": 8706.0,
       "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mace_600K.traj"
+    },
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 800.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mace_800K.traj"
+    },
+    {
+      "mlip": "mace",
+      "config": 0,
+      "temperature_K": 1000.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mace_1000K.traj"
+    },
+    {
+      "mlip": "mattersim",
+      "config": 0,
+      "temperature_K": 600.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "mean_T": 601.5,
+      "mean_E_per_atom": -4.0733,
+      "drift_meV_atom_ps": 0.002,
+      "wall_seconds": 10151.8,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mattersim_600K.traj"
+    },
+    {
+      "mlip": "mattersim",
+      "config": 0,
+      "temperature_K": 800.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "mean_T": 798.8,
+      "mean_E_per_atom": -4.043,
+      "drift_meV_atom_ps": -0.006,
+      "wall_seconds": 10083.0,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mattersim_800K.traj"
+    },
+    {
+      "mlip": "mattersim",
+      "config": 0,
+      "temperature_K": 1000.0,
+      "n_steps": 200000,
+      "timestep_fs": 1.0,
+      "production_ps": 200.0,
+      "log_every": 50,
+      "n_frames": 4001,
+      "mean_T": 1002.2,
+      "mean_E_per_atom": -4.0118,
+      "drift_meV_atom_ps": -0.002,
+      "wall_seconds": 9951.1,
+      "traj_path": "/home/svu/e1582271/AI4SSB/project2_mlip_md/data/traj_prod/mattersim_1000K.traj"
     }
   ]
 }
