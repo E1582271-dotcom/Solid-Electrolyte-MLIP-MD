@@ -82,8 +82,9 @@ data, quantifying the sensitivity of "label quality -> potential -> sigma".
 ## 3. Results
 
 Benchmark: Li6PS5Cl room-temperature ~3.15 mS/cm (sintered). Figures in
-`figures/03_arrhenius{,_long,_prod,_ft}.*` (double-column Nature spec, MD points carry
-kinisi error bars) and `03_sigma300_vs_expt*.*`.
+`../figures/{main,supplementary}/03_arrhenius*.*` and `03_sigma300_vs_expt*.*` (production/`_ft`
+in `main/`, baseline/`_long` in `supplementary/`; double-column Nature spec, MD points carry
+kinisi error bars).
 
 sigma(300 K) is a **weighted** Arrhenius extrapolation (each temperature weighted by its kinisi
 uncertainty -- the Mo-group `aimd` standard); the bracket is the propagated [sigma_min, sigma_max]
@@ -105,12 +106,12 @@ the two 1-sigma intervals do not overlap experiment from the same side.
 
 Fine-tuned-potential validation force RMSE: foundation model 234 -> fine-tuned
 **62.4 meV/A** (3.75x improvement); validation energy RMSE 3.3 meV/atom. Convergence
-curves in `figures/04_finetune_convergence.*` (validation force/energy RMSE vs. epoch,
+curves in `../figures/main/04_finetune_convergence.*` (validation force/energy RMSE vs. epoch,
 compared against the foundation-model baseline; the spike around epoch 90 is the SWA
 stage-two restart).
 
 MD stability (conservation check -- temperature and energy stable over time, no
-blow-up/drift) is shown in `figures/02_md_stability_mace{,_prod,_ft}.*` (baseline 50 ps /
+blow-up/drift) is shown in `../figures/supplementary/02_md_stability_mace{,_prod,_ft}.*` (baseline 50 ps /
 production 200 ps, 416-atom / fine-tuned 200 ps).
 
 ### 3.1 Literature benchmark (result evaluation)

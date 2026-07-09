@@ -7,7 +7,7 @@
 # Submit (login node, from ~/AI4SSB/project2_mlip_md):
 #   for D in cl100 cl125 cl150 cl175; do
 #     for T in 600 800 1000; do
-#       qsub -N "w9_${D}_$T" -v DOPE=$D,TEMPS=$T,STEPS=150000,EQUILIB=10000 run_doped.pbs
+#       qsub -N "w9_${D}_$T" -v DOPE=$D,TEMPS=$T,STEPS=150000,EQUILIB=10000 hpc/run_doped.pbs
 #     done
 #   done
 # Analyse (after all 3 temps of a composition finish; CPU, laptop or login node):
@@ -40,5 +40,5 @@ export SINGULARITYENV_LEAD_CIF="data/doped/dope_${DOPE}.cif" # run_in_container.
 export SINGULARITYENV_TRAJ_TAG="_dope_${DOPE}"
 
 # NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
-singularity exec "$IMG" bash run_in_container.sh
+singularity exec "$IMG" bash hpc/run_in_container.sh
 echo "[pbs] end=$(date)"

@@ -34,6 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from src import structure as st  # noqa: E402
 from src import plotstyle as pstyle  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 
 def _plot_configs(configs, summaries, energies, path):
@@ -66,8 +67,8 @@ def _plot_configs(configs, summaries, energies, path):
     fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
                fontsize=pstyle.FS_LEGEND, handletextpad=0.3, columnspacing=1.4,
                bbox_to_anchor=(0.5, -0.01))
-    pstyle.save_source_data(path, ["config", "tag", "n_Li", "n_P", "n_S", "n_Cl",
-                                   "ewald_energy_eV"], rows)
+    op.save_source_data(path, ["config", "tag", "n_Li", "n_P", "n_S", "n_Cl",
+                               "ewald_energy_eV"], rows)
     return pstyle.finalize_figure(fig, path)[0]
 
 
@@ -112,7 +113,7 @@ def main():
         print(f"     -> {name}: {summ['n_atoms']} atoms, {summ['n_Li']} Li, "
               f"rho={summ['density_g_cm3']} g/cm3")
 
-    fig_path = os.path.join(args.fig_dir, "01_structures.png")
+    fig_path = op.fig(args.fig_dir, "01_structures.png")
     _plot_configs(fig_cells, fig_summ, energies, fig_path)
     print(f"[01] figure -> {os.path.relpath(fig_path, HERE)}")
 

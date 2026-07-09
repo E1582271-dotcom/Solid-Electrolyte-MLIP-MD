@@ -13,7 +13,7 @@ NVT Langevin / 600-800-1000 K / 150 ps protocol as the W11 funnel leads (04_prep
 -- i.e. the "screening-grade" (400-atom-class) tier, NOT the W8 production tier (416-atom /
 200 ps). The Cl=1.0 anchor (Li6PS5Cl itself) therefore reads ~7.3 mS/cm here, not the 5.57
 mS/cm of the production baseline in metrics_prod.json -- same order of magnitude, different
-convergence tier, not a discrepancy (see the in-figure caveat + REPORT.md).
+convergence tier, not a discrepancy (see the in-figure caveat + docs/REPORT.md).
 
 Run after all four `03_analyze_transport.py --traj-tag _dope_cl<NNN> --no-expt` calls:
     python 07_doping_trend.py
@@ -35,6 +35,7 @@ DATA = os.path.join(HERE, "data")
 FIG = os.path.join(HERE, "figures")
 sys.path.insert(0, HERE)
 from src import plotstyle as ps  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 # (cltag, Cl content) in ascending order -- x = cl_content - 1
 COMPOSITIONS = [("cl100", 1.00), ("cl125", 1.25), ("cl150", 1.50), ("cl175", 1.75)]
@@ -116,11 +117,12 @@ def main():
     src_rows = [[r["tag"], r["cl_content"], r["formula"], r["n_atoms"], r["sigma300_mS_cm"],
                 r["sigma300_lo_err"], r["sigma300_hi_err"], r["Ea_eV"], r["Ea_err_eV"], r["R2"]]
                 for r in rows]
-    ps.save_source_data(os.path.join(FIG, "07_doping_trend.png"),
+    out = op.fig(FIG, "07_doping_trend.png")
+    op.save_source_data(out,
                         ["tag", "cl_content", "formula", "n_atoms", "sigma300_mS_cm",
                          "sigma300_lo_err", "sigma300_hi_err", "Ea_eV", "Ea_err_eV", "R2"], src_rows)
-    ps.finalize_figure(fig, os.path.join(FIG, "07_doping_trend.png"), w_pad=3.0)
-    print("Saved figures/07_doping_trend.png, source_data/07_doping_trend.csv")
+    ps.finalize_figure(fig, out, w_pad=3.0)
+    print(f"Saved figures/{op.tier('07_doping_trend')}/07_doping_trend.png + source_data")
 
 
 if __name__ == "__main__":

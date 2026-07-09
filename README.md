@@ -7,7 +7,7 @@ sulfide solid-state-battery computational groups. Planned weeks W5–W9, milesto
 
 ## Where this repo fits in the portfolio
 
-![Screen (Project 1) + Generate (Project 3) -> MLIP-MD validation (this repo) -> future electrochemical closure](figures/08_pipeline_overview.png)
+![Screen (Project 1) + Generate (Project 3) -> MLIP-MD validation (this repo) -> future electrochemical closure](figures/supplementary/08_pipeline_overview.png)
 
 This is the flagship/convergence point of the AI4SSB three-project portfolio: Project 1
 ([Solid-Electrolyte-Screening](https://github.com/E1582271-dotcom/Solid-Electrolyte-Screening))
@@ -123,7 +123,7 @@ D@1000K is the kinisi estimate (with error bars). sigma(300 K) is a **weighted**
 extrapolation (points weighted by their per-T kinisi uncertainty, the Mo-group `aimd`
 standard); the bracket is the propagated [sigma_min, sigma_max] 1-sigma interval, and Ea
 carries its fit error. **The full literature benchmark (experiment + computation, with
-sigma/Ea and citations) is in [REPORT.md §3.1](REPORT.md).**
+sigma/Ea and citations) is in [docs/REPORT.md §3.1](docs/REPORT.md).**
 
 | MLIP (cell x duration) | D@1000K (cm2/s) | sigma(300K) [min, max] (mS/cm) | Ea (eV) | Ratio to expt. 3.15 | Arrhenius R2 | Note |
 |---|---|---|---|---|---|---|
@@ -187,7 +187,7 @@ approximant), running sigma/Ea under **exactly the same protocol** as the W11 le
 | 1.50 | Li5.5PS4.5Cl1.5 | 400 | 123 [96, 157] | 0.164±0.011 | 0.994 |
 | 1.75 | Li5.25PS4.25Cl1.75 | 392 | 213 [163, 278] | 0.148±0.011 | 0.996 |
 
-![Cl-excess doping trend: sigma(300K) and Ea vary monotonically with Cl content](figures/07_doping_trend.png)
+![Cl-excess doping trend: sigma(300K) and Ea vary monotonically with Cl content](figures/main/07_doping_trend.png)
 
 **Takeaway**: sigma rises and Ea falls monotonically with Cl content, a clean ~29x trend
 (R2 all >0.98, and the weighted-fit sigma bands of adjacent compositions barely overlap) --
@@ -218,7 +218,7 @@ self-consistent**.
 
 ```bash
 python 04_prepare_leads.py        # structure fetch + supercell + provenance manifest -> data/leads/ (already committed, ready to use)
-# Vanda submission (one job per lead x temperature, personal quota allows 4 concurrent): see run_leads.pbs header
+# Vanda submission (one job per lead x temperature, personal quota allows 4 concurrent): see hpc/run_leads.pbs header
 python 03_analyze_transport.py --traj-tag _lead_<key> --system <formula> --no-expt
 ```
 
@@ -227,7 +227,7 @@ benchmark against (`--no-expt`), so MD here is a **screening-grade certification
 checking whether the upstream coarse prior's ranking holds up, and giving an Ea with error
 bars; it is not a production-grade quantitative result. The Li6PS5Cl-specific fine-tuned
 model is deliberately not used here.
-Outputs: `data/metrics_lead_<key>.json` + `figures/03_arrhenius_lead_<key>.png`.
+Outputs: `data/metrics_lead_<key>.json` + `figures/supplementary/03_arrhenius_lead_<key>.png`.
 Provenance: `data/leads/leads.json`.
 
 ### Results (Vanda A40, 2026-07-02, all 12 jobs completed)
@@ -239,7 +239,7 @@ Provenance: `data/leads/leads.json`.
 | Li3PS4 (gen016) | P3 | 3rd | 5.5e-3 | 0.545 | 0.87 | ❌ mediocre |
 | LiPS3 (gen021) | P3 | 4th (**worst**) | **10** | 0.243 | 0.996 | ✅ strong candidate |
 
-![Arrhenius comparison of the four leads + upstream prior rank annotation](figures/06_compare_leads.png)
+![Arrhenius comparison of the four leads + upstream prior rank annotation](figures/supplementary/06_compare_leads.png)
 
 (sigma(300 K) is the weighted extrapolation; the near-insulating leads carry very wide
 bands -- Li8TiS6 [3e-4, 2e-3], Li3PS4 [2e-3, 2e-2] -- but sit orders of magnitude below the

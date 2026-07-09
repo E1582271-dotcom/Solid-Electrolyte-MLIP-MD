@@ -37,6 +37,7 @@ FIG = os.path.join(HERE, "figures")
 SRC = os.path.join(HERE, "source_data")
 sys.path.insert(0, HERE)
 from src import plotstyle as ps  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 # (key, display name, source project, upstream screening-funnel prior log10(sigma))
 LEADS = [
@@ -157,7 +158,8 @@ def main():
 
     ps.add_panel_label(axA, "a")
     ps.add_panel_label(axB, "b", x=-0.42)
-    os.makedirs(SRC, exist_ok=True)
+    src_tier = op.tier("06_compare_leads")
+    os.makedirs(os.path.join(SRC, src_tier), exist_ok=True)
     rows = []
     for key, name, src, prior in LEADS:
         fit = results[key]["fit"]
@@ -166,9 +168,10 @@ def main():
     import pandas as pd
     pd.DataFrame(rows, columns=["lead", "source_project", "prior_log10_sigma",
                                 "prior_rank", "sigma300_mS_cm", "Ea_eV", "R2"]).to_csv(
-        os.path.join(SRC, "fig06_compare_leads.csv"), index=False)
-    ps.finalize_figure(fig, os.path.join(FIG, "06_compare_leads.png"), w_pad=3.0)
-    print("Saved figures/06_compare_leads.png, source_data/fig06_compare_leads.csv")
+        os.path.join(SRC, src_tier, "fig06_compare_leads.csv"), index=False)
+    ps.finalize_figure(fig, op.fig(FIG, "06_compare_leads.png"), w_pad=3.0)
+    print(f"Saved figures/{src_tier}/06_compare_leads.png, "
+          f"source_data/{src_tier}/fig06_compare_leads.csv")
 
 
 if __name__ == "__main__":

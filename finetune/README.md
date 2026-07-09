@@ -22,7 +22,7 @@ Why this route:
 > the Brillouin zone of a 52-atom cell and can systematically bias forces/energies. Our run is
 > the live demonstration: 27 Γ-only GBRV labels made the potential *stiffer* than the foundation
 > model — Eₐ 0.265→0.335 eV, σ(300 K) 5.55→0.45 mS/cm (0.14× expt). Fine-tuning is only as
-> good as the labels; "fine-tuned" does NOT mean "more accurate" (REPORT.md §5).
+> good as the labels; "fine-tuned" does NOT mean "more accurate" (../docs/REPORT.md §5).
 
 ## Honest scope (this is a multi-day sub-project, NOT a one-run task)
 | Step | Tool | Cost | Status |
@@ -31,7 +31,7 @@ Why this route:
 | 2. DFT single-points → energy+forces labels | `11_label_qe.py` + `label_qe.pbs` (QE `pw.x`) | ~N × (0.5–2 h) CPU | ✅ done — 27 snapshots, 27 concurrent Vanda CPU jobs, ~1.8 h, 0 failures → `data/labelled.xyz` |
 | 3. Build train/valid extxyz | `12_split_train_valid.py` | seconds | ✅ done — 22 train / 5 valid |
 | 4. Fine-tune MACE-MP | `20_finetune_mace.sh` (`mace_run_train --foundation_model`) | ~1–3 h A40 | ✅ done — val force RMSE 234→62.4 meV/Å (see caveat above) |
-| 5. Re-run MD with fine-tuned model → re-analyse σ | `02_baseline_md.py --mace-model <path>` + `03` | ~1–2 h A40 | ✅ done — σ(300 K)=0.45 [0.31, 0.66] mS/cm, Eₐ=0.335 eV (REPORT.md §3) |
+| 5. Re-run MD with fine-tuned model → re-analyse σ | `02_baseline_md.py --mace-model <path>` + `03` | ~1–2 h A40 | ✅ done — σ(300 K)=0.45 [0.31, 0.66] mS/cm, Eₐ=0.335 eV (../docs/REPORT.md §3) |
 
 **N**: a demonstrative fine-tune wants ~100–300 labelled configs (spanning 600/800/1000 K +
 the relaxed cell). More configs → better, with diminishing returns. `snapshots.xyz` currently

@@ -32,6 +32,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from src import transport as tr  # noqa: E402
 from src import plotstyle as ps  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 MLIP_COLORS = ps.MLIP_COLORS
 EXPT_COLOR = ps.EXPT_COLOR
@@ -140,7 +141,7 @@ def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
                              f.get("Ea_eV", ""), f.get("Ea_err_eV", ""), f.get("sigma300_mS_cm", ""),
                              f.get("sigma300_min_mS_cm", ""), f.get("sigma300_max_mS_cm", ""),
                              f.get("R2", "")])
-    ps.save_source_data(path, ["mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
+    op.save_source_data(path, ["mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
                                "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
                                "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"], src_rows)
     return ps.finalize_figure(fig, path)[0]
@@ -182,7 +183,7 @@ def _plot_sigma300_bar(fits, path, expt=EXPT):
     ax.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
     for xi, v in zip(x, vals):
         ax.text(xi, v, f"{v:.2g}", ha="center", va="bottom", fontsize=ps.FS_ANNOT)
-    ps.save_source_data(path, ["category", "sigma300_mS_cm"], list(zip(cats, vals)))
+    op.save_source_data(path, ["category", "sigma300_mS_cm"], list(zip(cats, vals)))
     return ps.finalize_figure(fig, path)[0]
 
 
@@ -283,11 +284,11 @@ def main():
     figs = {}
     if any(len(r) >= 1 for r in per_mlip.values()):
         figs["arrhenius"] = _plot_arrhenius(per_mlip, fits,
-                                            os.path.join(args.fig_dir, f"03_arrhenius{args.traj_tag}.png"),
+                                            op.fig(args.fig_dir, f"03_arrhenius{args.traj_tag}.png"),
                                             expt_main=expt_main)
     if any(np.isfinite(f.get("sigma300_mS_cm", np.nan)) for f in fits.values()):
         name = f"03_sigma300{'_vs_expt' if expt else ''}{args.traj_tag}.png"
-        figs["sigma300"] = _plot_sigma300_bar(fits, os.path.join(args.fig_dir, name), expt=expt)
+        figs["sigma300"] = _plot_sigma300_bar(fits, op.fig(args.fig_dir, name), expt=expt)
     for k, p in figs.items():
         print(f"[03] figure[{k}] -> {os.path.relpath(p, HERE)}")
 

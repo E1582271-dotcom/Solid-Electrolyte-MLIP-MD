@@ -3,8 +3,8 @@ W7 step 5 (figure) -- MACE fine-tuning convergence. Plots the validation RMSE of
 energy per epoch (from mace_run_train's JSON-lines log) against the foundation (pre-fine-tune)
 baseline, so the "234 -> 62 meV/A" improvement is a figure, not just a table row.
 
-    finetune/results/<name>_train.txt  --(this)-->  figures/04_finetune_convergence.{png,svg}
-                                                     + source_data/04_finetune_convergence.csv
+    finetune/results/<name>_train.txt  --(this)-->  figures/main/04_finetune_convergence.{png,svg}
+                                                     + source_data/main/04_finetune_convergence.csv
 
 Usage:  python finetune/21_plot_finetune.py
 """
@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 from src import plotstyle as ps  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 
 def load_evals(path):
@@ -65,10 +66,10 @@ def main():
     for ax, ltr in zip(axes, "ab"):
         ps.add_panel_label(ax, ltr)
 
-    out = os.path.join(args.fig_dir, "04_finetune_convergence.png")
+    out = op.fig(args.fig_dir, "04_finetune_convergence.png")
     rows = ([["foundation", f"{f0:.2f}", f"{e0:.4f}"]] if foundation else []) + \
         [[e, f"{v_f:.4f}", f"{v_e:.5f}"] for e, v_f, v_e in zip(ep, rf, re)]
-    ps.save_source_data(out, ["epoch", "valid_rmse_f_meV_A", "valid_rmse_e_meV_atom"], rows)
+    op.save_source_data(out, ["epoch", "valid_rmse_f_meV_A", "valid_rmse_e_meV_atom"], rows)
     print("[21] figure ->", ps.finalize_figure(fig, out)[0])
 
 

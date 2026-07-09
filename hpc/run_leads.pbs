@@ -7,7 +7,7 @@
 # Submit (login node, from ~/AI4SSB/project2_mlip_md):
 #   for L in li20si3p3s23cl li8tis6 li3ps4_gen016 lips3_gen021; do
 #     for T in 600 800 1000; do
-#       qsub -N "w11_${L:0:9}_$T" -v LEAD=$L,TEMPS=$T,STEPS=150000,EQUILIB=10000 run_leads.pbs
+#       qsub -N "w11_${L:0:9}_$T" -v LEAD=$L,TEMPS=$T,STEPS=150000,EQUILIB=10000 hpc/run_leads.pbs
 #     done
 #   done
 # Analyse (after all 3 temps of a lead finish; CPU, laptop or login node):
@@ -40,5 +40,5 @@ export SINGULARITYENV_LEAD_CIF="data/leads/lead_${LEAD}.cif"
 export SINGULARITYENV_TRAJ_TAG="_lead_${LEAD}"
 
 # NOTE: no --nv on NUS (containers auto-expose the GPU; --nv breaks CUDA visibility)
-singularity exec "$IMG" bash run_in_container.sh
+singularity exec "$IMG" bash hpc/run_in_container.sh
 echo "[pbs] end=$(date)"

@@ -25,7 +25,7 @@ lead in the same statistics tier as the CONVERGED 52-atom/150 ps Li6PS5Cl baseli
 (box >= ~10 A), not the 416-atom production tier -- honest screening-grade MD.
 
 Outputs: data/leads/lead_<key>.cif + data/leads/leads.json (provenance manifest).
-Next:    qsub -v LEAD=<key>,TEMPS=<T> run_leads.pbs   (see that file's header)
+Next:    qsub -v LEAD=<key>,TEMPS=<T> hpc/run_leads.pbs   (see that file's header)
          python 03_analyze_transport.py --traj-tag _lead_<key> --system <formula> --no-expt
 
 CPU-only; safe to run locally.
@@ -188,7 +188,7 @@ def main():
     with open(os.path.join(LEADS_DIR, "leads.json"), "w") as f:
         json.dump(manifest, f, indent=2)
     print(f"[04] wrote {len(manifest['leads'])} leads -> data/leads/leads.json")
-    print("[04] next: qsub per lead+temp (see run_leads.pbs header), "
+    print("[04] next: qsub per lead+temp (see hpc/run_leads.pbs header), "
           "then 03_analyze_transport.py --traj-tag _lead_<key> --system <formula> --no-expt")
 
 

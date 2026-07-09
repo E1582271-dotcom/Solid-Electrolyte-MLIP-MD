@@ -17,7 +17,7 @@ Series (conventional cell has Z=4 formula units; 8 anion sites, 24 Li sites):
     x=0.50  Li5.5PS4.5Cl1.5     Cl 1.50   (2 free-S / 6 Cl / 22 Li)       -> literature 9.4 mS/cm
     x=0.75  Li5.25PS4.25Cl1.75  Cl 1.75   (1 free-S / 7 Cl / 21 Li)
 
-CPU-only (pymatgen); run locally, then rsync data/doped/ to Vanda for MD (run_doped.pbs).
+CPU-only (pymatgen); run locally, then rsync data/doped/ to Vanda for MD (hpc/run_doped.pbs).
 
 Usage:
     python 05_build_doped.py                       # x = 0, 0.25, 0.5, 0.75, 2x2x2 supercells
@@ -145,7 +145,7 @@ def main():
         json.dump(manifest, f, indent=2)
     print(f"[05] wrote {len(manifest['compositions'])} cells + doped.json -> "
           f"{os.path.relpath(DOPED_DIR, HERE)}/")
-    print("[05] next: rsync data/doped -> Vanda, then qsub run_doped.pbs per (comp, temp); "
+    print("[05] next: rsync data/doped -> Vanda, then qsub hpc/run_doped.pbs per (comp, temp); "
           "analyse with 03_analyze_transport.py --traj-tag _dope_<cltag> --system <formula> --no-expt")
 
 

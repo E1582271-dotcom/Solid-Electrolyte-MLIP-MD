@@ -35,6 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.join(HERE, "figures")
 sys.path.insert(0, HERE)
 from src import plotstyle as ps  # noqa: E402
+from src import outpaths as op  # noqa: E402
 
 # Same provenance colors as 06_compare_leads.py's LEAD_COLORS -- do not re-derive.
 C_P1 = ps.PALETTE["blue_main"]     # cool: screen (Project 1)
@@ -136,11 +137,10 @@ def main():
                                   "Li8TiS6 prior rank 2 -> MD falsified"],
         ["future", "n/a", "EIS / ARC electrochemical validation"],
     ]
-    ps.save_source_data(os.path.join(FIG, "08_pipeline_overview.png"),
-                        ["stage", "project", "headline"], rows)
-    ps.finalize_figure(fig, os.path.join(FIG, "08_pipeline_overview.png"),
-                       formats=("png", "svg"), pad=0.3)
-    print("Saved figures/08_pipeline_overview.png, source_data/08_pipeline_overview.csv")
+    out = op.fig(FIG, "08_pipeline_overview.png")
+    op.save_source_data(out, ["stage", "project", "headline"], rows)
+    ps.finalize_figure(fig, out, formats=("png", "svg"), pad=0.3)
+    print(f"Saved figures/{op.tier('08_pipeline_overview')}/08_pipeline_overview.png + source_data")
 
 
 if __name__ == "__main__":
