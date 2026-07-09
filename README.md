@@ -41,8 +41,10 @@ MACE / MatterSim / CHGNet + ASE + (LAMMPS) + pymatgen-analysis-diffusion + kinis
 DeePMD-kit (optional, for a DPA comparison).
 
 ## Compute
-Fine-tuning takes a few hours (Colab/AutoDL); multi-temperature production MD runs a few ns
-each, **W8 rented an AutoDL RTX 5090 on demand** (see `../compute/COMPUTE_NOTES.md`).
+Fine-tuning takes a few hours and the multi-temperature production MD a few ns each. **All of
+it -- DFT labelling, fine-tuning, and the 416-atom production MD -- ran on free NUS Vanda A40 /
+CPU allocations; 0 paid GPU rentals** (the AutoDL rental budgeted in `../compute/COMPUTE_NOTES.md`
+was ultimately not needed).
 
 ## Common pitfalls (write into the technical report)
 1. Using an un-fine-tuned universal MLIP directly -> systematic over-/under-estimation of
@@ -52,7 +54,7 @@ each, **W8 rented an AutoDL RTX 5090 on demand** (see `../compute/COMPUTE_NOTES.
 3. **Non-Arrhenius behavior** when extrapolating high-temperature data to room temperature
    (argyrodites are known to show this).
 4. Improper initial-configuration enumeration for the disordered structure (Cl/S mixed on
-   the 4c/4a sites).
+   the 4a/4d sites).
 5. Nernst-Einstein ignores ion correlation; PES softening lowers the apparent barrier;
    grain boundaries lower the measured sigma.
 
@@ -117,46 +119,54 @@ ordering, config1 = a site-disorder variant), **with zero hard-coded coordinates
 
 ## Results (W6 baseline + W8 production + W7 fine-tuning, from `data/metrics{,_long,_prod,_ft}.json`)
 Benchmark: Li6PS5Cl room-temperature ~3.15 mS/cm (sintered) / 1.33 mS/cm (mechanochemical).
-D@1000K is the kinisi estimate (with error bars). **The full literature benchmark (experiment +
-computation, with sigma/Ea and citations) is in [REPORT.md §3.1](REPORT.md).**
+D@1000K is the kinisi estimate (with error bars). sigma(300 K) is a **weighted** Arrhenius
+extrapolation (points weighted by their per-T kinisi uncertainty, the Mo-group `aimd`
+standard); the bracket is the propagated [sigma_min, sigma_max] 1-sigma interval, and Ea
+carries its fit error. **The full literature benchmark (experiment + computation, with
+sigma/Ea and citations) is in [REPORT.md §3.1](REPORT.md).**
 
-| MLIP (cell x duration) | D@1000K (cm2/s) | sigma(300K) extrapolated (mS/cm) | Ea (eV) | Ratio to expt. 3.15 | Arrhenius R2 | Note |
+| MLIP (cell x duration) | D@1000K (cm2/s) | sigma(300K) [min, max] (mS/cm) | Ea (eV) | Ratio to expt. 3.15 | Arrhenius R2 | Note |
 |---|---|---|---|---|---|---|
-| MACE-MP-0 (52-atom, 50 ps) | 5.0e-5 | 29.6 | 0.198 | 9.4x | 0.81 | un-fine-tuned baseline; low-T MSD unconverged |
-| MACE-MP-0 (52-atom, 150 ps) | 4.6e-5 | 12.9 | 0.232 | 4.1x | 0.999 | un-fine-tuned; converged, Arrhenius plot is a clean line |
-| MatterSim (52-atom, 50 ps) | 4.3e-5 | 16.0 | 0.211 | 5.1x | 0.85 | un-fine-tuned; thin data |
-| **MatterSim (52-atom, 150 ps)** | 3.8e-5 | **2.06** | 0.286 | **0.65x** | 0.983 | un-fine-tuned; converged; **the closest to experiment of any run** |
-| **MACE-MP-0 (416-atom, 200 ps)** | 5.5e-5 | **5.57** | 0.265 | **1.8x** | 0.999 | **W8 production; un-fine-tuned foundation model; 2x2x2 supercell** |
-| **MatterSim (416-atom, 200 ps)** | 3.2e-5 | **0.42** | 0.338 | **0.13x** | 0.991 | production; un-fine-tuned foundation model; 2x2x2 supercell |
-| **MACE fine-tuned (416-atom, 200 ps)** | 3.0e-5 | **0.497** | 0.331 | **0.16x** | 0.998 | **W7 fine-tuning (SWA); 27 QE-Gamma force labels; validation force RMSE 234->62 meV/A** |
+| MACE-MP-0 (52-atom, 50 ps) | 5.0e-5 | 22.7 [11, 45] | 0.21±0.03 | 7.2x | 0.79 | un-fine-tuned baseline; low-T MSD unconverged (wide band) |
+| MACE-MP-0 (52-atom, 150 ps) | 4.6e-5 | 12.5 [5.9, 27] | 0.234±0.031 | 4.0x | 0.999 | un-fine-tuned; converged, Arrhenius plot is a clean line |
+| MatterSim (52-atom, 50 ps) | 4.3e-5 | 14.1 [6.9, 29] | 0.22±0.03 | 4.5x | 0.83 | un-fine-tuned; thin data |
+| **MatterSim (52-atom, 150 ps)** | 3.8e-5 | **1.79 [0.82, 3.9]** | 0.292±0.032 | **0.57x** | 0.982 | un-fine-tuned; converged; **the closest single run to experiment** |
+| **MACE-MP-0 (416-atom, 200 ps)** | 5.5e-5 | **5.55 [4.2, 7.3]** | 0.265±0.012 | **1.8x** | 0.999 | **W8 production; band sits entirely ABOVE experiment; 2x2x2 supercell** |
+| **MatterSim (416-atom, 200 ps)** | 3.2e-5 | **0.35 [0.25, 0.49]** | 0.346±0.014 | **0.11x** | 0.991 | production; band entirely below experiment; 2x2x2 supercell |
+| **MACE fine-tuned (416-atom, 200 ps)** | 3.0e-5 | **0.45 [0.31, 0.66]** | 0.335±0.015 | **0.14x** | 0.998 | **W7 fine-tuning (SWA); band entirely BELOW experiment; 27 QE-Gamma labels; val force RMSE 234->62 meV/A** |
 
 **Takeaways**:
 - **Un-fine-tuned baseline (52-atom)**: both universal potentials systematically
   over-predict single-crystal sigma at 50 ps (no grain-boundary upper bound), with
   MatterSim one notch lower than MACE; extending to 150 ps converges both downward --
-  MACE 29.6->12.9 (9.4x->4.1x), R2 0.81->0.999, **MatterSim 16.0->2.06 (5.1x->0.65x), R2
-  0.85->0.983, and after convergence it is actually the closest to experiment of any
-  run** -- confirming that the short-run over-prediction/low-temperature scatter is MSD
-  sampling noise, not genuine non-Arrhenius behavior.
+  MACE 22.7->12.5 (7.2x->4.0x), R2 0.79->0.999, **MatterSim 14.1->1.79 (4.5x->0.57x), R2
+  0.83->0.982, and after convergence it is the closest single run to experiment** --
+  confirming that the short-run over-prediction/low-temperature scatter is MSD sampling
+  noise (note the wide error band on the unconverged 50 ps fits), not genuine
+  non-Arrhenius behavior.
 - **W8 production (416-atom, 200 ps, foundation model)**: the larger cell and longer time
-  bring MACE's sigma down to **5.57 mS/cm (1.8x experiment)**, R2=0.999, energy drift
-  0.007 meV/atom/ps -- pure MLIP-MD has reached literature-level agreement. This is
+  bring MACE's sigma down to **5.55 mS/cm (1.8x experiment), [4.2, 7.3]**, R2=0.999, energy
+  drift 0.007 meV/atom/ps -- pure MLIP-MD has reached literature-level agreement. This is
   milestone ②'s core deliverable.
 - **MatterSim at production scale: the bias evolves in the opposite direction from
-  MACE's.** MatterSim is **the closest to experiment of any run** at 52-atom/150ps
-  (0.65x), but scaling up to 416-atom/200ps production makes the under-prediction
-  **worse** (0.42 mS/cm, 0.13x). The two potentials sit on opposite sides of experiment
+  MACE's.** MatterSim is **the closest single run to experiment** at 52-atom/150ps
+  (0.57x), but scaling up to 416-atom/200ps production makes the under-prediction
+  **worse** (0.35 mS/cm, 0.11x). The two potentials sit on opposite sides of experiment
   at both convergence tiers, but **move in opposite directions as sampling improves**:
-  MACE's over-prediction narrows with better sampling (9.4x/4.1x -> 1.8x, getting more
-  accurate), while MatterSim's under-prediction widens (0.65x -> 0.13x, getting less
+  MACE's over-prediction narrows with better sampling (7.2x/4.0x -> 1.8x, getting more
+  accurate), while MatterSim's under-prediction widens (0.57x -> 0.11x, getting less
   accurate) -- a bigger cell and longer run time is not universally "more expensive =
   more accurate" for every un-fine-tuned potential, which is worth stating explicitly in
   the benchmark discussion.
 - **W7 fine-tuning (27 QE-Gamma DFT force labels -> SWA fine-tuning, validation force RMSE
-  234->62 meV/A)**: the potential stiffens (Ea 0.265->0.331 eV), and sigma drops to
-  **0.497 mS/cm (0.16x, under-predicting by ~6x)**. The foundation model **over-predicts**
+  234->62 meV/A)**: the potential stiffens (Ea 0.265->0.335 eV), and sigma drops to
+  **0.45 mS/cm (0.14x, under-predicting by ~7x)**. The foundation model **over-predicts**
   and the fine-tuned model **under-predicts**, bracketing experiment right in between
-  (geometric mean ~1.7 mS/cm); the stiffening direction is most likely due to
+  (geometric mean ~1.6 mS/cm). **This bracketing is statistically robust, not a fitting
+  artifact:** even with propagated error bars the production band [4.2, 7.3] mS/cm sits
+  entirely above experiment (3.15) and the fine-tuned band [0.31, 0.66] entirely below --
+  the two intervals do not overlap experiment from the same side. The stiffening
+  direction is most likely due to
   **Gamma-only k-point sampling + the GBRV pseudopotential + the small 27-configuration
   dataset** -- honestly written into the technical report as evidence of the "label
   quality -> potential -> sigma" sensitivity chain, and also the motivation for the next
@@ -170,21 +180,22 @@ substitution with Li-vacancy charge compensation, Ewald enumeration for the grou
 approximant), running sigma/Ea under **exactly the same protocol** as the W11 leads
 (MACE-MP-0 small, NVT Langevin, 600/800/1000 K, 150 ps):
 
-| Cl content | Composition | Atoms | sigma(300K) mS/cm | Ea (eV) | R2 |
+| Cl content | Composition | Atoms | sigma(300K) [min, max] mS/cm | Ea (eV) | R2 |
 |---|---|---|---|---|---|
-| 1.00 (anchor) | Li6PS5Cl | 416 | 7.34 | 0.256 | 1.000 |
-| 1.25 | Li5.75PS4.75Cl1.25 | 408 | 34.55 | 0.206 | 0.987 |
-| 1.50 | Li5.5PS4.5Cl1.5 | 400 | 128.59 | 0.161 | 0.995 |
-| 1.75 | Li5.25PS4.25Cl1.75 | 392 | 210.74 | 0.149 | 0.996 |
+| 1.00 (anchor) | Li6PS5Cl | 416 | 7.31 [5.6, 9.6] | 0.256±0.011 | 1.000 |
+| 1.25 | Li5.75PS4.75Cl1.25 | 408 | 33.2 [26, 43] | 0.208±0.011 | 0.986 |
+| 1.50 | Li5.5PS4.5Cl1.5 | 400 | 123 [96, 157] | 0.164±0.011 | 0.994 |
+| 1.75 | Li5.25PS4.25Cl1.75 | 392 | 213 [163, 278] | 0.148±0.011 | 0.996 |
 
 ![Cl-excess doping trend: sigma(300K) and Ea vary monotonically with Cl content](figures/07_doping_trend.png)
 
 **Takeaway**: sigma rises and Ea falls monotonically with Cl content, a clean ~29x trend
-(R2 all >0.98) -- reproducing the direction reported in the Li6PS5Cl literature: "Cl
-excess -> more disorder + more Li vacancies -> lower migration barrier -> higher sigma".
+(R2 all >0.98, and the weighted-fit sigma bands of adjacent compositions barely overlap) --
+reproducing the direction reported in the Li6PS5Cl literature: "Cl excess -> more disorder +
+more Li vacancies -> lower migration barrier -> higher sigma".
 **Protocol note**: this batch uses the 400-atom-class/150 ps "screening-grade" protocol
-(same as the W11 leads), not the 416-atom/200 ps production tier; the Cl=1.0 anchor (7.34)
-is not identical to the production baseline (5.57) but is the same order of magnitude --
+(same as the W11 leads), not the 416-atom/200 ps production tier; the Cl=1.0 anchor (7.31)
+is not identical to the production baseline (5.55) but is the same order of magnitude --
 this is a difference in convergence tier, not a bug. The absolute value inherits the
 universal potential's bias, but **the trend itself is immune to that bias**, which is
 what makes this section most trustworthy.
@@ -223,18 +234,22 @@ Provenance: `data/leads/leads.json`.
 
 | Lead | Source | Upstream coarse-prior rank | sigma(300K) mS/cm | Ea (eV) | R2 | MD verdict |
 |---|---|---|---|---|---|---|
-| Li20Si3P3S23Cl | P1 | 1st | **30.2** | 0.198 | 0.995 | ✅ confirmed strong candidate |
-| Li8TiS6 | P1 | 2nd | 1.4e-7 | 0.940 | 0.963 | ❌ falsified (near-insulating) |
-| Li3PS4 (gen016) | P3 | 3rd | 1.1e-4 | 0.703 | 0.924 | ❌ mediocre |
-| LiPS3 (gen021) | P3 | 4th (**worst**) | **10.2** | 0.244 | 0.996 | ✅ strong candidate |
+| Li20Si3P3S23Cl | P1 | 1st | **29** | 0.199 | 0.994 | ✅ confirmed strong candidate |
+| Li8TiS6 | P1 | 2nd | 9e-4 | 0.602 | 0.77 | ❌ falsified (near-insulating) |
+| Li3PS4 (gen016) | P3 | 3rd | 5.5e-3 | 0.545 | 0.87 | ❌ mediocre |
+| LiPS3 (gen021) | P3 | 4th (**worst**) | **10** | 0.243 | 0.996 | ✅ strong candidate |
 
 ![Arrhenius comparison of the four leads + upstream prior rank annotation](figures/06_compare_leads.png)
+
+(sigma(300 K) is the weighted extrapolation; the near-insulating leads carry very wide
+bands -- Li8TiS6 [3e-4, 2e-3], Li3PS4 [2e-3, 2e-2] -- but sit orders of magnitude below the
+survivors with no overlap, so the verdicts are unambiguous.)
 
 **Rank reversal -- this section's most important finding**: the upstream coarse prior
 ranked LiPS3 **worst of the four** (log10(sigma)=-7.12, two and a half orders of
 magnitude below Li20Si3P3S23Cl), yet after the same-protocol MD certification it is the
-**second-strongest** -- sigma=10.2 mS/cm, Ea=0.244 eV, comparable in both order of
-magnitude and activation energy to the Li6PS5Cl baseline (5.57 mS/cm, Ea=0.265 eV).
+**second-strongest** -- sigma=10 mS/cm, Ea=0.243 eV, comparable in both order of
+magnitude and activation energy to the Li6PS5Cl baseline (5.55 mS/cm, Ea=0.265 eV).
 Conversely, Li8TiS6 (2nd by the prior) is falsified as nearly insulating.
 
 **Why the prior misses**: all of Project 3's generated candidates fall into P1's model's

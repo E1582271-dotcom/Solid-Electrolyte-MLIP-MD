@@ -85,14 +85,23 @@ Benchmark: Li6PS5Cl room-temperature ~3.15 mS/cm (sintered). Figures in
 `figures/03_arrhenius{,_long,_prod,_ft}.*` (double-column Nature spec, MD points carry
 kinisi error bars) and `03_sigma300_vs_expt*.*`.
 
-| Model (cell x duration) | D@1000K (cm2/s) | sigma(300K) (mS/cm) | E_a (eV) | Ratio to expt. | R2 |
+sigma(300 K) is a **weighted** Arrhenius extrapolation (each temperature weighted by its kinisi
+uncertainty -- the Mo-group `aimd` standard); the bracket is the propagated [sigma_min, sigma_max]
+1-sigma interval and E_a carries its fit error.
+
+| Model (cell x duration) | D@1000K (cm2/s) | sigma(300K) [min, max] (mS/cm) | E_a (eV) | Ratio to expt. | R2 |
 |---|---|---|---|---|---|
-| MACE-MP-0 (52-atom, 50 ps) | 5.0e-5 | 29.6 | 0.198 | 9.4x | 0.81 |
-| MACE-MP-0 (52-atom, 150 ps) | 4.6e-5 | 12.9 | 0.232 | 4.1x | 0.999 |
-| MatterSim (52-atom, 50 ps) | 4.3e-5 | 16.0 | 0.211 | 5.1x | 0.85 |
-| **MatterSim (52-atom, 150 ps)** | 3.8e-5 | **2.06** | 0.286 | **0.65x** | 0.983 |
-| **MACE-MP-0 (416-atom, 200 ps)** production | 5.5e-5 | **5.57** | 0.265 | **1.8x** | 0.999 |
-| **MACE fine-tuned (416-atom, 200 ps)** | 3.0e-5 | **0.497** | 0.331 | **0.16x** | 0.998 |
+| MACE-MP-0 (52-atom, 50 ps) | 5.0e-5 | 22.7 [11, 45] | 0.21±0.03 | 7.2x | 0.79 |
+| MACE-MP-0 (52-atom, 150 ps) | 4.6e-5 | 12.5 [5.9, 27] | 0.234±0.031 | 4.0x | 0.999 |
+| MatterSim (52-atom, 50 ps) | 4.3e-5 | 14.1 [6.9, 29] | 0.22±0.03 | 4.5x | 0.83 |
+| **MatterSim (52-atom, 150 ps)** | 3.8e-5 | **1.79 [0.82, 3.9]** | 0.292±0.032 | **0.57x** | 0.982 |
+| **MACE-MP-0 (416-atom, 200 ps)** production | 5.5e-5 | **5.55 [4.2, 7.3]** | 0.265±0.012 | **1.8x** | 0.999 |
+| **MatterSim (416-atom, 200 ps)** production | 3.2e-5 | **0.35 [0.25, 0.49]** | 0.346±0.014 | **0.11x** | 0.991 |
+| **MACE fine-tuned (416-atom, 200 ps)** | 3.0e-5 | **0.45 [0.31, 0.66]** | 0.335±0.015 | **0.14x** | 0.998 |
+
+**The over/under bracketing is statistically robust, not a fitting artifact:** the production band
+[4.2, 7.3] sits entirely above experiment (3.15) and the fine-tuned band [0.31, 0.66] entirely below --
+the two 1-sigma intervals do not overlap experiment from the same side.
 
 Fine-tuned-potential validation force RMSE: foundation model 234 -> fine-tuned
 **62.4 meV/A** (3.75x improvement); validation energy RMSE 3.3 meV/atom. Convergence
@@ -108,9 +117,10 @@ production 200 ps, 416-atom / fine-tuned 200 ps).
 
 | Source | Type | sigma(300 K) mS/cm | E_a (eV) | Method / conditions |
 |---|---|---|---|---|
-| **This work (production)** | MLIP-MD | **5.57** | **0.265** | MACE-MP-0, 416 atoms, 200 ps, extrapolated from 600-1000 K |
-| This work (MatterSim, 150 ps) | MLIP-MD | 2.06 | 0.286 | MatterSim, 52 atoms, 150 ps |
-| This work (fine-tuned) | MLIP-MD | 0.497 | 0.331 | Gamma-DFT-fine-tuned MACE |
+| **This work (production)** | MLIP-MD | **5.55 [4.2, 7.3]** | **0.265** | MACE-MP-0, 416 atoms, 200 ps, extrapolated from 600-1000 K |
+| This work (MatterSim production) | MLIP-MD | 0.35 [0.25, 0.49] | 0.346 | MatterSim, 416 atoms, 200 ps |
+| This work (MatterSim, 150 ps) | MLIP-MD | 1.79 | 0.292 | MatterSim, 52 atoms, 150 ps |
+| This work (fine-tuned) | MLIP-MD | 0.45 [0.31, 0.66] | 0.335 | Gamma-DFT-fine-tuned MACE |
 | Literature (computational) | MLIP-MD | 2.2 (extrapolated from 800-1200 K) / 0.22 (extrapolated from 500-700 K) | -- | 400-1200 K; the authors report **no hops** at 300 K/100 ns, requiring extrapolation, and the extrapolated value varies strongly with the fitted temperature window [1] |
 | Experiment (optimized sintering) | EIS | 3.15 | -- | 550 degC sintering [2] |
 | Experiment (liquid-phase synthesis) | EIS | >2 | -- | [3] |
@@ -119,11 +129,11 @@ production 200 ps, 416-atom / fine-tuned 200 ps).
 | Experiment (range across studies) | EIS | ~1-3.2 | **0.22-0.38** | multiple processing routes; solvent-processed samples as low as ~0.20-0.25, some studies 0.35-0.38 [5] |
 
 **Takeaways**:
-- **sigma(300 K)**: the production value of 5.57 is **1.8x** the optimized-sintering
+- **sigma(300 K)**: the production value of 5.55 [4.2, 7.3] is **1.8x** the optimized-sintering
   experimental value (3.15), the same order of magnitude as other MLIP-MD high-temperature
   extrapolations (2.2); all results are within "about 2x above the experimental value" --
   very good agreement for a purely un-fine-tuned potential.
-- **E_a**: the production value (0.265 eV) and the fine-tuned value (0.331 eV) **both fall
+- **E_a**: the production value (0.265 eV) and the fine-tuned value (0.335 eV) **both fall
   within the experimental 0.22-0.38 eV range**, correctly capturing the temperature
   dependence.
 - **The extrapolation sensitivity is corroborated by the literature**: [1] explicitly
@@ -133,7 +143,7 @@ production 200 ps, 416-atom / fine-tuned 200 ps).
   extra uncertainty, which is why the 50->150 ps convergence check matters.
 - **Single-crystal upper bound**: most experiments are on polycrystalline samples with
   grain boundaries, so the simulation being "somewhat above typical experiments" matches
-  expectations; the fine-tuned model's under-prediction (0.16x) is the outlier, attributed
+  expectations; the fine-tuned model's under-prediction (0.14x) is the outlier, attributed
   in §5.
 
 References: see the **References** section at the end ([1] arXiv:2403.14116 · [2] ACS AMI
@@ -184,16 +194,19 @@ systematic errors above and the Nernst-Einstein approximation).
   near-equilibrium PBE data, so what they have learned is the **near-equilibrium
   energy-force surface**; they extrapolate poorly to the details of the Li+ migration
   transition state and the sulfide's soft framework, tending to underestimate the barrier
-  -> overestimate sigma. Extending to 150 ps converges both noticeably: MACE to 4.1x,
-  **MatterSim drops to 0.65x (sigma 2.06 mS/cm, the closest to experiment of any run)** --
+  -> overestimate sigma. Extending to 150 ps converges both noticeably: MACE to 4.0x,
+  **MatterSim drops to 0.57x (sigma 1.79 mS/cm, the closest single run to experiment)** --
   showing that most of the short-run over-prediction is a statistical artifact of
-  unconverged MSD. **W8 production** (416 atoms + 200 ps) brings MACE down to **1.8x
-  experiment, R^2=0.999**, the literature-level agreement that pure MLIP-MD can reach.
+  unconverged MSD (note the wide weighted-fit bands on the 50 ps points). **W8 production**
+  (416 atoms + 200 ps) brings MACE down to **1.8x experiment, [4.2, 7.3] mS/cm, R^2=0.999**,
+  the literature-level agreement that pure MLIP-MD can reach.
 - **Fine-tuning stiffens the potential**: after fine-tuning on 27 QE-Gamma DFT forces, the
   validation force RMSE drops from 234 to 62 meV/A (the model genuinely fits our DFT forces
-  more closely), but **E_a rises from 0.265 to 0.331 eV and sigma drops to 0.16x**. In
+  more closely), but **E_a rises from 0.265 to 0.335 eV and sigma drops to 0.14x**. In
   other words: **the foundation model over-predicts, the fine-tuned model under-predicts,
-  bracketing experiment right in between** (geometric mean ~1.7 mS/cm ~= 0.5x experiment).
+  bracketing experiment right in between** (geometric mean ~1.6 mS/cm ~= 0.5x experiment) --
+  and the bracketing is statistically robust: the production band [4.2, 7.3] and the
+  fine-tuned band [0.31, 0.66] both exclude experiment, from opposite sides.
 - **Source of the stiffening (honest attribution)**: (a) **Gamma-only k-point sampling**
   under-samples the Brillouin zone for a 52-atom cell, which can systematically bias
   forces/energies; (b) **GBRV/PBE** differs from MACE-MP's VASP/PBE-PAW reference, so
@@ -207,7 +220,7 @@ systematic errors above and the Nernst-Einstein approximation).
 
 ## 6. Honest limitations (for the record)
 - Using an un-fine-tuned universal potential as-is -> systematic bias (this project
-  measured a 1.8-9.4x over-prediction).
+  measured a 1.8-7.2x over-prediction).
 - Unconverged MSD at the thin-pipeline tier -> sigma is only an order-of-magnitude
   indicator (mitigated with 150/200 ps).
 - MP/PBE lattice 4.3% too large; single-crystal, no grain boundaries (upper bound); NE

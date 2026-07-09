@@ -113,30 +113,73 @@ def diffusivity_kinisi(traj_path, specie, time_step_fs, step_skip,
                 "error": f"{type(e).__name__}: {e}"}
 
 
-def arrhenius_fit(temps, sigmas_mS_cm):
+def arrhenius_fit(temps, sigmas_mS_cm, sigma_errs_mS_cm=None):
     """Fit ln(sigma*T) vs 1/T. Returns Ea (eV), sigma300 (mS/cm), R^2, and fit line.
-    Needs >= 2 temperatures with positive sigma."""
+    Needs >= 2 temperatures with positive sigma.
+
+    If ``sigma_errs_mS_cm`` (per-temperature sigma uncertainty, e.g. the kinisi
+    bootstrap std) is supplied and finite/positive for every kept point, the fit is a
+    **weighted** least squares -- the field-standard treatment (Mo group ``aimd``
+    ``ArreheniusAnalyzer``; He/Zhu/Mo 2018): noisy low-T points are down-weighted, and
+    the fit covariance is propagated to a room-temperature conductivity **interval**
+    ``[sigma300_min, sigma300_max]`` and an activation-energy error ``Ea_err_eV``. Since
+    y = ln(sigma*T) and T is exact, the propagated 1-sigma uncertainty on y is
+    dy = d(sigma)/sigma. With absolute (unscaled) covariance the interval reflects the
+    input error bars rather than being rescaled by the fit's own goodness. Falls back to
+    the plain unweighted fit (no interval) when errors are missing."""
     T = np.asarray(temps, float)
     s = np.asarray(sigmas_mS_cm, float)
     ok = np.isfinite(s) & (s > 0) & np.isfinite(T)
+    if sigma_errs_mS_cm is not None:
+        se = np.asarray(sigma_errs_mS_cm, float)
+        ok &= np.isfinite(se)
     T, s = T[ok], s[ok]
     if len(T) < 2:
         return {"Ea_eV": float("nan"), "sigma300_mS_cm": float("nan"),
                 "R2": float("nan"), "n_points": int(len(T))}
     x = 1.0 / T
     y = np.log(s * T)                      # ln(sigma*T)
-    slope, intercept = np.polyfit(x, y, 1)
+
+    # weighted iff a positive error is available for every kept point
+    y_err = None
+    if sigma_errs_mS_cm is not None:
+        se = np.asarray(sigma_errs_mS_cm, float)[ok]
+        if np.all(np.isfinite(se)) and np.all(se > 0):
+            y_err = se / s                 # d(ln(sigma*T)) = d(sigma)/sigma
+
+    cov = None
+    if y_err is not None and len(T) >= 3:
+        # unscaled covariance == curve_fit(absolute_sigma=True): the interval reflects
+        # the input error bars, not a chi2/dof rescaling by the fit's own residuals.
+        (slope, intercept), cov = np.polyfit(x, y, 1, w=1.0 / y_err, cov="unscaled")
+    else:
+        slope, intercept = np.polyfit(x, y, 1)
+
     yhat = slope * x + intercept
     ss_res = float(np.sum((y - yhat) ** 2))
     ss_tot = float(np.sum((y - y.mean()) ** 2))
     r2 = 1 - ss_res / ss_tot if ss_tot > 0 else float("nan")
     Ea = -slope * _KB_EV                   # slope = -Ea/kB
     sigma300 = math.exp(slope / 300.0 + intercept) / 300.0
-    return {
+
+    out = {
         "Ea_eV": float(Ea),
         "sigma300_mS_cm": float(sigma300),
         "R2": float(r2),
         "n_points": int(len(T)),
         "slope": float(slope),
         "intercept": float(intercept),
+        "weighted": cov is not None,
     }
+    if cov is not None:
+        # propagate the (unscaled) fit covariance to Ea and to sigma(300 K).
+        slope_var, intercept_var, si_cov = cov[0, 0], cov[1, 1], cov[0, 1]
+        out["slope_err"] = float(np.sqrt(slope_var))
+        out["intercept_err"] = float(np.sqrt(intercept_var))
+        out["Ea_err_eV"] = float(np.sqrt(slope_var) * _KB_EV)
+        x0 = 1.0 / 300.0                   # y300 = ln(sigma300 * 300)
+        y300_var = x0 * x0 * slope_var + intercept_var + 2.0 * x0 * si_cov
+        y300, y300_sig = slope * x0 + intercept, float(np.sqrt(max(y300_var, 0.0)))
+        out["sigma300_min_mS_cm"] = float(math.exp(y300 - y300_sig) / 300.0)
+        out["sigma300_max_mS_cm"] = float(math.exp(y300 + y300_sig) / 300.0)
+    return out

@@ -79,7 +79,14 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
         fit = fits.get(mlip)
         if fit and np.isfinite(fit["Ea_eV"]):
             ax.plot(1000.0 / Tgrid, yfunc(_sigma_model(Tgrid, fit), Tgrid), color=c, lw=1.0)
-            ax.scatter([1000.0 / 300], [yfunc(fit["sigma300_mS_cm"], 300.0)], color=c,
+            y300 = yfunc(fit["sigma300_mS_cm"], 300.0)
+            lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+            if lo and hi and np.isfinite(lo) and np.isfinite(hi):
+                # weighted-fit propagated sigma(300 K) interval on the extrapolation star
+                ax.errorbar([1000.0 / 300], [y300],
+                            yerr=[[y300 - yfunc(lo, 300.0)], [yfunc(hi, 300.0) - y300]],
+                            fmt="none", ecolor=c, elinewidth=0.8, capsize=2, capthick=0.8, zorder=3)
+            ax.scatter([1000.0 / 300], [y300], color=c,
                        marker="*", s=70, edgecolor=ps.PALETTE["neutral_black"],
                        linewidth=0.4, zorder=4)
             s = side.get(mlip, 1)                # direct label beside the fit line (replaces legend)
@@ -113,9 +120,14 @@ def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
         ax.annotate("expt", (1000.0 / 300, yT(expt_main, 300.0)), textcoords="offset points",
                     xytext=(-5, 0), ha="right", va="center", color=EXPT_COLOR, fontsize=ps.FS_ANNOT)
     # per-MLIP fit stats in one corner box
-    stats = [f"{m}: $E_a$ {fits[m]['Ea_eV']:.2f} eV · $\\sigma_{{300}}$ "
-             f"{fits[m]['sigma300_mS_cm']:.1f} · $R^2$ {fits[m]['R2']:.3f}"
-             for m in per_mlip if fits.get(m) and np.isfinite(fits[m].get("R2", np.nan))]
+    def _stat(m):
+        f = fits[m]
+        ea = (f"{f['Ea_eV']:.2f}$\\pm${f['Ea_err_eV']:.2f}" if f.get("Ea_err_eV") is not None
+              else f"{f['Ea_eV']:.2f}")
+        s3 = (f"{f['sigma300_mS_cm']:.1f} [{f['sigma300_min_mS_cm']:.1f}, {f['sigma300_max_mS_cm']:.1f}]"
+              if f.get("sigma300_min_mS_cm") is not None else f"{f['sigma300_mS_cm']:.1f}")
+        return f"{m}: $E_a$ {ea} eV · $\\sigma_{{300}}$ {s3} · $R^2$ {f['R2']:.3f}"
+    stats = [_stat(m) for m in per_mlip if fits.get(m) and np.isfinite(fits[m].get("R2", np.nan))]
     if stats:
         ax.text(0.03, 0.03, "\n".join(stats), transform=ax.transAxes,
                 fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
@@ -125,9 +137,12 @@ def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
         f = fits.get(m, {}) or {}
         for r in rows:
             src_rows.append([m, r["T"], r["sigma_mS_cm"], r.get("kinisi_sigma_std_mS_cm", ""),
-                             f.get("Ea_eV", ""), f.get("sigma300_mS_cm", ""), f.get("R2", "")])
+                             f.get("Ea_eV", ""), f.get("Ea_err_eV", ""), f.get("sigma300_mS_cm", ""),
+                             f.get("sigma300_min_mS_cm", ""), f.get("sigma300_max_mS_cm", ""),
+                             f.get("R2", "")])
     ps.save_source_data(path, ["mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
-                               "fit_Ea_eV", "fit_sigma300_mS_cm", "fit_R2"], src_rows)
+                               "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
+                               "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"], src_rows)
     return ps.finalize_figure(fig, path)[0]
 
 
@@ -136,21 +151,31 @@ def _plot_sigma300_bar(fits, path, expt=EXPT):
     when expt is falsy). No chart title; material + fit provenance belong in the caption."""
     fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.0))
     labels, vals, colors, cats = [], [], [], []
+    err_lo, err_hi = [], []          # asymmetric weighted-fit sigma(300 K) interval per bar
     pretty = {"mace": "MACE", "mattersim": "MatterSim"}   # run type is in the caption/filename
     for mlip, fit in fits.items():
         if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
             labels.append(pretty.get(mlip, mlip))
-            vals.append(fit["sigma300_mS_cm"])
+            v = fit["sigma300_mS_cm"]
+            vals.append(v)
+            lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+            err_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
+            err_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
             colors.append(MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"]))
             cats.append(pretty.get(mlip, mlip))
     for name, v in (expt or {}).items():
         lab = "sintered\n(expt)" if "sinter" in name else "mech.chem\n(expt)"
         labels.append(lab)
         vals.append(v)
+        err_lo.append(0.0)
+        err_hi.append(0.0)           # experiment = single measured reference, no fit band
         colors.append(ps.PALETTE["neutral_mid"])   # experiment = neutral reference
         cats.append(lab.replace("\n", " "))
     x = np.arange(len(labels))
-    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.7)
+    yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
+    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.7,
+           yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
+                                    ecolor=ps.PALETTE["neutral_black"]))
     ax.set_yscale("log")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=ps.FS_TICK)
@@ -174,50 +199,77 @@ def main():
                     "(W11 leads: the lead formula)")
     ap.add_argument("--no-expt", action="store_true", help="omit the Li6PS5Cl experimental "
                     "references (W11 leads are literature-blank -- no expt sigma exists)")
+    ap.add_argument("--from-metrics", action="store_true",
+                    help="skip trajectories: re-fit the Arrhenius block and regenerate the "
+                    "figures from an existing data/metrics{tag}.json (its per_run D/kinisi "
+                    "errors). Reproducible after the raw trajectories are deleted; the "
+                    "system + experiment references are read back from the metrics file.")
     args = ap.parse_args()
     expt, expt_main = (None, None) if args.no_expt else (EXPT, EXPT_MAIN)
     ps.apply_publication_style()
 
-    traj_files = sorted(glob.glob(os.path.join(args.data_dir, f"traj{args.traj_tag}", "*.traj")))
-    if not traj_files:
-        sys.exit(f"no trajectories in {args.data_dir}/traj{args.traj_tag} -- run 02_baseline_md.py first")
-    run_params = _load_run_params(args.data_dir, args.traj_tag)
+    existing_metrics = None
+    if args.from_metrics:
+        mpath = os.path.join(args.data_dir, f"metrics{args.traj_tag}.json")
+        if not os.path.exists(mpath):
+            sys.exit(f"--from-metrics: {mpath} not found")
+        existing_metrics = json.load(open(mpath))
+        all_rows = existing_metrics.get("per_run", [])
+        if not all_rows:
+            sys.exit(f"--from-metrics: {mpath} has no per_run rows to re-fit")
+        per_mlip = {}
+        for r in all_rows:
+            per_mlip.setdefault(r["mlip"], []).append(r)
+        # honour the metrics file's own system + experiment references (so leads, which
+        # are literature-blank, regenerate without re-passing --no-expt / --system).
+        expt = existing_metrics.get("experiment_mS_cm")
+        expt_main = (expt.get("Li6PS5Cl (sintered)") or next(iter(expt.values()), None)) if expt else None
+        print(f"[03] --from-metrics: re-fitting {os.path.relpath(mpath, HERE)} "
+              f"({len(all_rows)} runs, no trajectories)")
+    else:
+        traj_files = sorted(glob.glob(os.path.join(args.data_dir, f"traj{args.traj_tag}", "*.traj")))
+        if not traj_files:
+            sys.exit(f"no trajectories in {args.data_dir}/traj{args.traj_tag} -- run 02_baseline_md.py first")
+        run_params = _load_run_params(args.data_dir, args.traj_tag)
 
-    per_mlip, all_rows = {}, []
-    for tf in traj_files:
-        m = TRAJ_RE.search(os.path.basename(tf))
-        if not m:
-            continue
-        mlip, T = m["mlip"], float(m["T"])
-        ts, skip = run_params.get((mlip, int(T)), (args.timestep, args.log_every))
-        print(f"[03] {mlip} @ {int(T)}K  (dt={ts}fs, every {skip}) ...")
+        per_mlip, all_rows = {}, []
+        for tf in traj_files:
+            m = TRAJ_RE.search(os.path.basename(tf))
+            if not m:
+                continue
+            mlip, T = m["mlip"], float(m["T"])
+            ts, skip = run_params.get((mlip, int(T)), (args.timestep, args.log_every))
+            print(f"[03] {mlip} @ {int(T)}K  (dt={ts}fs, every {skip}) ...")
 
-        structures, _ = tr.load_structures(tf)
-        n = tr.carrier_density(structures[0], args.specie)
-        pmg = tr.diffusivity_pymatgen(structures, args.specie, T, ts, skip)
-        kin = tr.diffusivity_kinisi(tf, args.specie, ts, skip, n_per_cm3=n, T=T)
+            structures, _ = tr.load_structures(tf)
+            n = tr.carrier_density(structures[0], args.specie)
+            pmg = tr.diffusivity_pymatgen(structures, args.specie, T, ts, skip)
+            kin = tr.diffusivity_kinisi(tf, args.specie, ts, skip, n_per_cm3=n, T=T)
 
-        row = {
-            "mlip": mlip, "T": T,
-            "D_cm2_s": pmg["D_cm2_s"],
-            "sigma_mS_cm": pmg["sigma_mS_cm"],          # pymatgen backbone -> Arrhenius
-            "kinisi_D_cm2_s": kin.get("D_cm2_s"),
-            "kinisi_D_std_cm2_s": kin.get("D_std_cm2_s"),
-            "kinisi_sigma_mS_cm": kin.get("sigma_mS_cm"),
-            "kinisi_sigma_std_mS_cm": kin.get("sigma_std_mS_cm"),
-            "n_frames": pmg["n_frames"],
-        }
-        if "error" in kin:
-            row["kinisi_error"] = kin["error"]
-        print(f"     D(pmg)={pmg['D_cm2_s']:.2e} cm2/s  sigma={pmg['sigma_mS_cm']:.2e} mS/cm"
-              f"  | kinisi D={kin.get('D_cm2_s')!r}")
-        per_mlip.setdefault(mlip, []).append(row)
-        all_rows.append(row)
+            row = {
+                "mlip": mlip, "T": T,
+                "D_cm2_s": pmg["D_cm2_s"],
+                "sigma_mS_cm": pmg["sigma_mS_cm"],          # pymatgen backbone -> Arrhenius
+                "kinisi_D_cm2_s": kin.get("D_cm2_s"),
+                "kinisi_D_std_cm2_s": kin.get("D_std_cm2_s"),
+                "kinisi_sigma_mS_cm": kin.get("sigma_mS_cm"),
+                "kinisi_sigma_std_mS_cm": kin.get("sigma_std_mS_cm"),
+                "n_frames": pmg["n_frames"],
+            }
+            if "error" in kin:
+                row["kinisi_error"] = kin["error"]
+            print(f"     D(pmg)={pmg['D_cm2_s']:.2e} cm2/s  sigma={pmg['sigma_mS_cm']:.2e} mS/cm"
+                  f"  | kinisi D={kin.get('D_cm2_s')!r}")
+            per_mlip.setdefault(mlip, []).append(row)
+            all_rows.append(row)
 
     fits = {}
     for mlip, rows in per_mlip.items():
         rows.sort(key=lambda r: r["T"])
-        fit = tr.arrhenius_fit([r["T"] for r in rows], [r["sigma_mS_cm"] for r in rows])
+        # weighted by the per-T kinisi sigma uncertainty (Mo-group standard); falls back
+        # to an unweighted fit inside arrhenius_fit when a point lacks an error bar.
+        fit = tr.arrhenius_fit([r["T"] for r in rows], [r["sigma_mS_cm"] for r in rows],
+                               [r.get("kinisi_sigma_std_mS_cm") for r in rows])
         fits[mlip] = fit
         if np.isfinite(fit["Ea_eV"]):
             vs = (f"(expt {expt_main}; ratio {fit['sigma300_mS_cm'] / expt_main:.2g}x)"
@@ -239,30 +291,36 @@ def main():
     for k, p in figs.items():
         print(f"[03] figure[{k}] -> {os.path.relpath(p, HERE)}")
 
-    caveats = [
-        "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma "
-        "(this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
-        "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories "
-        "give order-of-magnitude sigma only.",
-        "Nernst-Einstein ignores ion correlation (no Haven ratio).",
-        "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
-        "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius.",
-    ]
-    if args.system == "Li6PS5Cl":
-        caveats.append("S/Cl disorder sampled by a few representative orderings, "
-                       "not the full ensemble.")
-    metrics = {
-        "system": args.system,
-        "baseline": True,
-        "fine_tuned": False,
-        "experiment_mS_cm": expt,
-        "per_run": all_rows,
-        "arrhenius": fits,
-        "caveats": caveats,
-    }
+    if existing_metrics is not None:
+        # --from-metrics: preserve per_run + all original metadata; swap in the re-fit only.
+        metrics = existing_metrics
+        metrics["arrhenius"] = fits
+    else:
+        caveats = [
+            "Un-fine-tuned universal MLIP baseline: expect a systematic bias in volume/D/sigma "
+            "(this project measured 0.16-9.4x vs experiment for Li6PS5Cl depending on protocol).",
+            "Check MSD convergence per run (the 50->150->200 ps ladder): short trajectories "
+            "give order-of-magnitude sigma only.",
+            "Nernst-Einstein ignores ion correlation (no Haven ratio).",
+            "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
+            "High-T -> 300 K Arrhenius extrapolation adds error if transport is non-Arrhenius.",
+        ]
+        if args.system == "Li6PS5Cl":
+            caveats.append("S/Cl disorder sampled by a few representative orderings, "
+                           "not the full ensemble.")
+        metrics = {
+            "system": args.system,
+            "baseline": True,
+            "fine_tuned": False,
+            "experiment_mS_cm": expt,
+            "per_run": all_rows,
+            "arrhenius": fits,
+            "caveats": caveats,
+        }
     with open(os.path.join(args.data_dir, f"metrics{args.traj_tag}.json"), "w") as f:
         json.dump(metrics, f, indent=2)
-    print(f"[03] wrote metrics.json ({len(all_rows)} runs). Baseline read-out complete.")
+    print(f"[03] wrote metrics{args.traj_tag}.json ({len(all_rows)} runs). "
+          f"{'Re-fit' if existing_metrics is not None else 'Baseline read-out'} complete.")
 
 
 if __name__ == "__main__":

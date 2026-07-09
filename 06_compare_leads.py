@@ -102,7 +102,13 @@ def main():
         if np.isfinite(fit.get("Ea_eV", np.nan)):
             axA.plot(1000.0 / Tgrid, np.log10(_sigma_model(Tgrid, fit) * Tgrid),
                     color=c, lw=1.0, zorder=2)
-            axA.scatter([1000.0 / 300], [np.log10(fit["sigma300_mS_cm"] * 300)],
+            y300 = np.log10(fit["sigma300_mS_cm"] * 300)
+            lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+            if lo and hi and np.isfinite(lo) and np.isfinite(hi):
+                axA.errorbar([1000.0 / 300], [y300],
+                             yerr=[[y300 - np.log10(lo * 300)], [np.log10(hi * 300) - y300]],
+                             fmt="none", ecolor=c, elinewidth=0.8, capsize=2, capthick=0.8, zorder=3)
+            axA.scatter([1000.0 / 300], [y300],
                        color=c, marker="*", s=60, edgecolor=ps.PALETTE["neutral_black"],
                        linewidth=0.4, zorder=4)
     axA.axvline(1000.0 / 300, ls=":", color=ps.PALETTE["neutral_mid"], lw=0.6)
@@ -124,7 +130,17 @@ def main():
     vals = [results[key]["fit"]["sigma300_mS_cm"] for key, *_ in order]
     colors = [LEAD_COLORS[key] for key, *_ in order]
     ypos = range(len(order))
-    axB.barh(ypos, vals, color=colors, edgecolor=ps.PALETTE["neutral_black"], linewidth=0.5)
+    # asymmetric weighted-fit sigma(300 K) interval per lead (0 when a fit lacks bounds)
+    xe_lo, xe_hi = [], []
+    for key, *_ in order:
+        f = results[key]["fit"]; v = f["sigma300_mS_cm"]
+        lo, hi = f.get("sigma300_min_mS_cm"), f.get("sigma300_max_mS_cm")
+        xe_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
+        xe_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
+    xerr = [xe_lo, xe_hi] if any(xe_lo) or any(xe_hi) else None
+    axB.barh(ypos, vals, color=colors, edgecolor=ps.PALETTE["neutral_black"], linewidth=0.5,
+             xerr=xerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
+                                      ecolor=ps.PALETTE["neutral_black"]))
     axB.set_xscale("log")
     axB.axvline(baseline["sigma300_mS_cm"], color=BASELINE_COLOR, ls="--", lw=0.8, zorder=1)
     axB.text(baseline["sigma300_mS_cm"], len(order) - 0.4, " Li$_6$PS$_5$Cl",

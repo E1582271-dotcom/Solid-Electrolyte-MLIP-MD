@@ -56,21 +56,30 @@ def main():
                      f"--no-expt first")
         d = json.load(open(path))
         fit = d["arrhenius"]["mace"]
-        per_run = d["per_run"]
-        rel = np.array([(r.get("kinisi_sigma_std_mS_cm") or 0.0) / r["kinisi_sigma_mS_cm"]
-                        if r.get("kinisi_sigma_mS_cm") else 0.0 for r in per_run])
-        sig300_rel_err = float(np.nanmean(rel)) if len(rel) else 0.0
+        s = fit["sigma300_mS_cm"]
+        # weighted-fit propagated sigma(300 K) interval (Mo-group standard); fall back to
+        # the mean per-T kinisi relative error only if an older metrics file lacks bounds.
+        lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+        if lo and hi and np.isfinite(lo) and np.isfinite(hi):
+            sig_lo_err, sig_hi_err = s - lo, hi - s
+        else:
+            rel = np.array([(r.get("kinisi_sigma_std_mS_cm") or 0.0) / r["kinisi_sigma_mS_cm"]
+                            if r.get("kinisi_sigma_mS_cm") else 0.0 for r in d["per_run"]])
+            m = float(np.nanmean(rel)) if len(rel) else 0.0
+            sig_lo_err = sig_hi_err = s * m
         meta = doped_meta[tag]
         rows.append({
             "tag": tag, "cl_content": cl, "formula": meta["formula"],
-            "n_atoms": meta["n_atoms"], "sigma300_mS_cm": fit["sigma300_mS_cm"],
-            "Ea_eV": fit["Ea_eV"], "R2": fit["R2"], "sigma300_rel_err": sig300_rel_err,
+            "n_atoms": meta["n_atoms"], "sigma300_mS_cm": s,
+            "Ea_eV": fit["Ea_eV"], "Ea_err_eV": fit.get("Ea_err_eV") or 0.0, "R2": fit["R2"],
+            "sigma300_lo_err": sig_lo_err, "sigma300_hi_err": sig_hi_err,
         })
 
     xs = np.array([r["cl_content"] for r in rows])
     sig = np.array([r["sigma300_mS_cm"] for r in rows])
     ea = np.array([r["Ea_eV"] for r in rows])
-    sig_err = sig * np.array([r["sigma300_rel_err"] for r in rows])
+    ea_err = np.array([r["Ea_err_eV"] for r in rows])
+    sig_err = np.array([[r["sigma300_lo_err"] for r in rows], [r["sigma300_hi_err"] for r in rows]])
     colors = [DOPE_COLORS[r["tag"]] for r in rows]
 
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(ps.COL_DOUBLE_IN, 3.0))
@@ -91,6 +100,9 @@ def main():
 
     # --- panel b: Ea vs Cl content, linear y -----------------------------------
     axB.plot(xs, ea, color=ps.PALETTE["neutral_mid"], lw=0.8, zorder=1)
+    if np.any(ea_err > 0):
+        axB.errorbar(xs, ea, yerr=ea_err, fmt="none", ecolor=ps.PALETTE["neutral_dark"],
+                     elinewidth=0.7, capsize=1.8, capthick=0.7, zorder=2)
     axB.scatter(xs, ea, c=colors, s=34, edgecolor="white", linewidth=0.5, zorder=3)
     axB.set_xlabel("Cl content in Li$_{6-x}$PS$_{5-x}$Cl$_{1+x}$")
     axB.set_ylabel("$E_a$  (eV)")
@@ -102,10 +114,11 @@ def main():
     ps.add_panel_label(axB, "b")
 
     src_rows = [[r["tag"], r["cl_content"], r["formula"], r["n_atoms"], r["sigma300_mS_cm"],
-                r["Ea_eV"], r["R2"]] for r in rows]
+                r["sigma300_lo_err"], r["sigma300_hi_err"], r["Ea_eV"], r["Ea_err_eV"], r["R2"]]
+                for r in rows]
     ps.save_source_data(os.path.join(FIG, "07_doping_trend.png"),
                         ["tag", "cl_content", "formula", "n_atoms", "sigma300_mS_cm",
-                         "Ea_eV", "R2"], src_rows)
+                         "sigma300_lo_err", "sigma300_hi_err", "Ea_eV", "Ea_err_eV", "R2"], src_rows)
     ps.finalize_figure(fig, os.path.join(FIG, "07_doping_trend.png"), w_pad=3.0)
     print("Saved figures/07_doping_trend.png, source_data/07_doping_trend.csv")
 
