@@ -240,7 +240,7 @@ Conversely, Li8TiS6 (2nd by the prior) is falsified as nearly insulating.
 -- 78.3% of the real candidate pool is in this state), so the model can only see
 composition-level statistics at that point and cannot distinguish which of Li3PS4 and
 LiPS3 is more conductive -- their prior scores differ by only 0.3 orders of magnitude,
-while the real conductivities differ by a full 5 orders of magnitude. **This is exactly
+while the MD conductivities differ by more than 3 orders of magnitude. **This is exactly
 why the funnel needs a second layer (MD)**: the coarse prior is responsible for
 compressing the search space from hundreds of thousands down to a handful, but its
 internal ranking resolution is not fine enough -- the finer discrimination has to be
