@@ -35,6 +35,8 @@ data, quantifying the sensitivity of "label quality -> potential -> sigma".
   unchanged at 1.641 g/cm3, 192 Li atoms) -- the larger box suppresses MSD statistical
   noise and finite-size effects.
 
+![Li6PS5Cl structure: PS4 framework + free S/Cl disorder, ordered approximant and 2x2x2 supercell](../figures/main/01_structures.png)
+
 ### 2.2 Molecular dynamics (`02_baseline_md.py`, `src/md.py`)
 - ASE **NVT Langevin**, friction coefficient 0.01 fs^-1, timestep 1 fs, temperatures
   600/800/1000 K (high temperature accelerates diffusion so it can be sampled within an
@@ -104,15 +106,23 @@ uncertainty -- the Mo-group `aimd` standard); the bracket is the propagated [sig
 [4.2, 7.3] sits entirely above experiment (3.15) and the fine-tuned band [0.31, 0.66] entirely below --
 the two 1-sigma intervals do not overlap experiment from the same side.
 
+![Arrhenius ln(sigma*T) vs 1000/T for the 416-atom / 200 ps production run, with kinisi error bars and the 300 K extrapolation](../figures/main/03_arrhenius_prod.png)
+
+![sigma(300 K) vs experiment: the foundation-potential band sits above and the fine-tuned band below the measured 3.15 mS/cm](../figures/main/03_sigma300_vs_expt_prod.png)
+
 Fine-tuned-potential validation force RMSE: foundation model 234 -> fine-tuned
 **62.4 meV/A** (3.75x improvement); validation energy RMSE 3.3 meV/atom. Convergence
 curves in `../figures/main/04_finetune_convergence.*` (validation force/energy RMSE vs. epoch,
 compared against the foundation-model baseline; the spike around epoch 90 is the SWA
 stage-two restart).
 
+![Fine-tuning convergence: validation force / energy RMSE vs epoch against the foundation-model baseline](../figures/main/04_finetune_convergence.png)
+
 MD stability (conservation check -- temperature and energy stable over time, no
 blow-up/drift) is shown in `../figures/supplementary/02_md_stability_mace{,_prod,_ft}.*` (baseline 50 ps /
 production 200 ps, 416-atom / fine-tuned 200 ps).
+
+![MD conservation check for the 416-atom / 200 ps production run: temperature and energy stable, no drift](../figures/supplementary/02_md_stability_mace_prod.png)
 
 ### 3.1 Literature benchmark (result evaluation)
 
