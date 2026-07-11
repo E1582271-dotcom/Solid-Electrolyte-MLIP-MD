@@ -11,7 +11,7 @@ Series is Li6-x PS5-x Cl1+x (x = 0/0.25/0.5/0.75), built by 05_build_doped.py: f
 S2- -> Cl- substitution with Li-vacancy charge compensation, same MACE-MP-0 (small) /
 NVT Langevin / 600-800-1000 K / 150 ps protocol as the W11 funnel leads (04_prepare_leads.py)
 -- i.e. the "screening-grade" (400-atom-class) tier, NOT the W8 production tier (416-atom /
-200 ps). The Cl=1.0 anchor (Li6PS5Cl itself) therefore reads ~7.3 mS/cm here, not the 5.57
+200 ps). The Cl=1.0 anchor (Li6PS5Cl itself) therefore reads ~7.3 mS/cm here, not the 5.55
 mS/cm of the production baseline in metrics_prod.json -- same order of magnitude, different
 convergence tier, not a discrepancy (see the in-figure caveat + docs/REPORT.md).
 

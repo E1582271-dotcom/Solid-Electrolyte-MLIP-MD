@@ -8,7 +8,7 @@ sulfides yet (that is W7), so expect a few-to-tens-of-percent error in volume / 
 
 Heavy deps (torch / mace-torch / mattersim) are imported lazily inside ``load_calculator``
 so this module imports fine on a laptop with only pymatgen/ASE -- the MD itself runs on a
-GPU (Colab T4 for the thin baseline; AutoDL RTX 5090 for W8 production).
+GPU (Colab T4 for the thin baseline; the free NUS Vanda A40 for W8 production).
 
 import-only.
 """

@@ -8,7 +8,7 @@ and we read the bias off against experiment before fine-tuning (W7).
 
 THIN baseline defaults (the user's "validate the pipeline first" choice): 50 ps production
 after 5 ps equilibration, 1 fs steps. Statistics are NOT converged at this length -- scale
---steps up (and --supercell in 01) for the W8 production run on a rented GPU.
+--steps up (and --supercell in 01) for the W8 production run on the free NUS Vanda A40.
 
 Run this on a GPU (Colab T4). Heavy MLIP packages are intentionally not installed locally.
 

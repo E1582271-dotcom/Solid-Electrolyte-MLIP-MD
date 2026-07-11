@@ -1,7 +1,8 @@
 # W7 — Fine-tuning MACE-MP-0 for Li₆PS₅Cl (scaffold)
 
-The baseline (un-fine-tuned MACE-MP-0) over-predicts σ(300 K) by ~9.4× with E_a slightly
-low (0.198 eV). W7 asks: **does sulfide-specific fine-tuning pull σ toward experiment?**
+The un-fine-tuned MACE-MP-0 baseline **over-predicts** σ(300 K) — 1.8× experiment at the
+416-atom / 200 ps production tier (and more at the thin 52-atom tier). W7 asks: **does
+sulfide-specific fine-tuning pull σ toward experiment?**
 
 ## The honest bottleneck: training data
 Fine-tuning needs **DFT labels** (energy + forces, ideally stress) on diverse Li₆PS₅Cl

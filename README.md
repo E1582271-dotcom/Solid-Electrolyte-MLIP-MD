@@ -43,8 +43,7 @@ DeePMD-kit (optional, for a DPA comparison).
 ## Compute
 Fine-tuning takes a few hours and the multi-temperature production MD a few ns each. **All of
 it -- DFT labelling, fine-tuning, and the 416-atom production MD -- ran on free NUS Vanda A40 /
-CPU allocations; 0 paid GPU rentals** (the AutoDL rental budgeted in `../compute/COMPUTE_NOTES.md`
-was ultimately not needed).
+CPU allocations; 0 paid GPU rentals** (an AutoDL rental was budgeted but ultimately not needed).
 
 ## Common pitfalls (write into the technical report)
 1. Using an un-fine-tuned universal MLIP directly -> systematic over-/under-estimation of

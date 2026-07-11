@@ -1,7 +1,7 @@
 {
   "system": "Li6PS5Cl",
-  "baseline": true,
-  "fine_tuned": false,
+  "baseline": false,
+  "fine_tuned": true,
   "experiment_mS_cm": {
     "Li6PS5Cl (sintered)": 3.15,
     "Li6PS5Cl (mechanochem.)": 1.33
@@ -58,11 +58,11 @@
     }
   },
   "caveats": [
-    "Un-fine-tuned universal MLIP baseline: expect 2-40% bias in volume/D/sigma vs experiment; fine-tuning is W7.",
-    "Thin MD (short trajectory): MSD statistics NOT converged -> sigma is order-of-magnitude indicative only.",
+    "Fine-tuned MACE-MP-0 (27 Gamma-only QE/GBRV force labels, SWA), 416-atom / 200 ps production tier: validation force RMSE 234 -> 62.4 meV/A, but the potential stiffens (Ea 0.265 -> 0.335 eV) and sigma drops to 0.45 mS/cm (0.14x experiment).",
+    "Foundation model over-predicts (1.8x), fine-tuned under-predicts (0.14x) -> they bracket experiment; the fine-tuned band [0.31, 0.66] sits entirely below 3.15 mS/cm.",
+    "Stiffening attributed to Gamma-only k-points + GBRV pseudopotential + the small 27-config (mostly near-equilibrium) dataset -- 'fine-tuned' does NOT mean 'more accurate' here (docs/REPORT.md section 5).",
     "Nernst-Einstein ignores ion correlation (no Haven ratio).",
     "Single-crystal upper bound: no grain boundaries (real polycrystals are lower).",
-    "Argyrodite shows non-Arrhenius transport; linear extrapolation to 300 K adds error.",
-    "S/Cl disorder sampled by a few representative orderings, not the full ensemble."
+    "Argyrodite shows non-Arrhenius transport; linear extrapolation to 300 K adds error."
   ]
 }
