@@ -84,7 +84,7 @@ data, quantifying the sensitivity of "label quality -> potential -> sigma".
 ## 3. Results
 
 Benchmark: Li6PS5Cl room-temperature ~3.15 mS/cm (sintered). Figures in
-`../figures/{main,supplementary}/03_arrhenius*.*` and `03_sigma300_vs_expt*.*` (production/`_ft`
+`../figures/{main,supplementary}/03_transport*.*` (production/`_ft`
 in `main/`, baseline/`_long` in `supplementary/`; double-column Nature spec, MD points carry
 kinisi error bars).
 
@@ -106,9 +106,7 @@ uncertainty -- the Mo-group `aimd` standard); the bracket is the propagated [sig
 [4.2, 7.3] sits entirely above experiment (3.15) and the fine-tuned band [0.31, 0.66] entirely below --
 the two 1-sigma intervals do not overlap experiment from the same side.
 
-![Arrhenius ln(sigma*T) vs 1000/T for the 416-atom / 200 ps production run, with kinisi error bars and the 300 K extrapolation](../figures/main/03_arrhenius_prod.png)
-
-![sigma(300 K) vs experiment: the foundation-potential band sits above and the fine-tuned band below the measured 3.15 mS/cm](../figures/main/03_sigma300_vs_expt_prod.png)
+![Production transport read-out — a: Arrhenius ln(sigma*T) vs 1000/T with kinisi error bars and the 300 K extrapolation; b: sigma(300 K) bars vs experiment](../figures/main/03_transport_prod.png)
 
 Fine-tuned-potential validation force RMSE: foundation model 234 -> fine-tuned
 **62.4 meV/A** (3.75x improvement); validation energy RMSE 3.3 meV/atom. Convergence

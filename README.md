@@ -23,7 +23,7 @@ potential → σ* sensitivity chain.
 - **A clean, bias-immune doping trend.** Across Li₆₋ₓPS₅₋ₓCl₁₊ₓ, σ(300 K) rises **~29×**
   monotonically while Eₐ falls (R² > 0.98) — a direction immune to the potential's absolute bias.
 
-![σ(300 K) from MLIP-MD vs experiment — the foundation potential sits above and the fine-tuned potential below the measured value, bracketing it](figures/main/03_sigma300_vs_expt_prod.png)
+![Production transport read-out — a: Arrhenius fit with kinisi error bars and the 300 K extrapolation; b: σ(300 K) vs experiment, MACE above and MatterSim below the measured value](figures/main/03_transport_prod.png)
 
 ## Where this repo fits in the portfolio
 
@@ -209,7 +209,7 @@ benchmark against (`--no-expt`), so MD here is a **screening-grade certification
 checking whether the upstream coarse prior's ranking holds up, and giving an Ea with error
 bars; it is not a production-grade quantitative result. The Li6PS5Cl-specific fine-tuned
 model is deliberately not used here.
-Outputs: `data/metrics_lead_<key>.json` + `figures/supplementary/03_arrhenius_lead_<key>.png`.
+Outputs: `data/metrics_lead_<key>.json` + a row in `figures/supplementary/03_transport_leads.png`.
 Provenance: `data/leads/leads.json`.
 
 ### Results (Vanda A40, 2026-07-02, all 12 jobs completed)

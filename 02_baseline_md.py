@@ -58,8 +58,8 @@ def _plot_md(records, mlip, fig_dir, tag=""):
         rows.append([int(T), f"{Ta.mean():.2f}", f"{Ta.std():.2f}", f"{Ea.mean():.5f}", f"{drift:.4f}"])
     for T in {int(r["temperature_K"]) for r in records}:
         axes[0].axhline(T, ls="--", lw=0.5, color=TEMP_COLORS.get(T, pstyle.PALETTE["neutral_mid"]))
-    axes[0].set(xlabel="time (ps)", ylabel="temperature (K)")
-    axes[1].set(xlabel="time (ps)", ylabel="potential energy (eV/atom)")
+    axes[0].set(xlabel="Time (ps)", ylabel="Temperature (K)")
+    axes[1].set(xlabel="Time (ps)", ylabel="Potential energy (eV/atom)")
     # direct in-colour label at the right end of each temperature trace (panel a), no legend box
     t_end = max(max(r["series"]["step"]) * r["timestep_fs"] / 1000.0 for r in records)
     for rec in records:

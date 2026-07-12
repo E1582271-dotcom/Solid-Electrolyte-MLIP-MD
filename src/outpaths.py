@@ -8,8 +8,8 @@ block of ``plotstyle.py`` (shared verbatim with the P1/P3 repos).
 Usage in a plotting script::
 
     from src import outpaths as op
-    out = op.fig(args.fig_dir, "03_arrhenius_prod.png")   # -> figures/main/03_arrhenius_prod.png
-    op.save_source_data(out, columns, rows)               # -> source_data/main/03_arrhenius_prod.csv
+    out = op.fig(args.fig_dir, "03_transport_prod.png")   # -> figures/main/03_transport_prod.png
+    op.save_source_data(out, columns, rows)               # -> source_data/main/03_transport_prod.csv
     ps.finalize_figure(fig, out)
 """
 from __future__ import annotations
@@ -18,13 +18,13 @@ import os
 
 from src import plotstyle as ps
 
-# The eight headline stems = docs/FIGURES.md "Main figures" (Fig. 1–5). Everything else
-# (02 stability, baseline/_long transport, per-composition doping, per-lead, and the
-# pipeline schematic) is supplementary.
+# The six headline stems = docs/FIGURES.md "Main figures" (Fig. 1–5). Everything else
+# (02 stability, the merged baseline/doping/leads transport figures, and the pipeline
+# schematic) is supplementary.
 MAIN = {
     "01_structures",
-    "03_arrhenius_prod", "03_sigma300_vs_expt_prod",
-    "04_finetune_convergence", "03_arrhenius_ft", "03_sigma300_vs_expt_ft",
+    "03_transport_prod", "03_transport_ft",
+    "04_finetune_convergence",
     "06_compare_leads",
     "07_doping_trend",
 }

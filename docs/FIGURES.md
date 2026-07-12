@@ -16,18 +16,22 @@ File names carry **provenance, not figure order**: the `NN_` prefix is the pipel
 draws the file, and the suffix names the convergence tier / composition / lead. The figure numbers
 (Fig. 1–5, S1–S5) live only in this document. Map:
 
+Every transport figure is one `03_transport…` file: panel **a** = the Arrhenius fit, panel
+**b** = the σ(300 K) bars (a single analysis run), and the merged supplementary figures stack
+one such row per tag / composition / lead (panels a, b, c, … row-major, row label top-right).
+
 | file (`figures/<tier>/…`) | figure | tier | produced by |
 |---|---|---|---|
 | `main/01_structures.png` | Fig. 1 | — | `01_build_structure.py` |
-| `main/03_arrhenius_prod.png` · `main/03_sigma300_vs_expt_prod.png` | Fig. 2 | prod | `03_analyze_transport.py --traj-tag _prod` |
+| `main/03_transport_prod.png` | Fig. 2 | prod | `03_analyze_transport.py --traj-tag _prod` |
 | `main/04_finetune_convergence.png` | Fig. 3 | ft | `finetune/21_plot_finetune.py` |
-| `main/03_arrhenius_ft.png` · `main/03_sigma300_vs_expt_ft.png` | Fig. 3 | ft | `03_analyze_transport.py --traj-tag _ft` |
+| `main/03_transport_ft.png` | Fig. 3 | ft | `03_analyze_transport.py --traj-tag _ft` |
 | `main/07_doping_trend.png` | Fig. 4 | dope | `07_doping_trend.py` |
 | `main/06_compare_leads.png` | Fig. 5 | lead | `06_compare_leads.py` |
 | `supplementary/02_md_stability_<mlip><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
-| `supplementary/03_arrhenius{,_long}.png` · `03_sigma300_vs_expt{,_long}.png` | Fig. S2 | baseline, long | `03_analyze_transport.py [--traj-tag _long]` |
-| `supplementary/03_{arrhenius,sigma300}_dope_cl<NNN>.png` (×8) | Fig. S3 | dope | `03_analyze_transport.py --traj-tag _dope_cl<NNN> --no-expt` |
-| `supplementary/03_{arrhenius,sigma300}_lead_<key>.png` (×8) | Fig. S4 | lead | `03_analyze_transport.py --traj-tag _lead_<key> --no-expt` |
+| `supplementary/03_transport_convergence.png` | Fig. S2 | baseline, long | `03_analyze_transport.py --merge-tags ",_long" --merge-name convergence` |
+| `supplementary/03_transport_dope.png` | Fig. S3 | dope | `03_analyze_transport.py --merge-tags "_dope_cl100,…,_dope_cl175" --merge-name dope` |
+| `supplementary/03_transport_leads.png` | Fig. S4 | lead | `03_analyze_transport.py --merge-tags "_lead_<key>,…" --merge-name leads` |
 | `supplementary/08_pipeline_overview.{png,svg}` | Fig. S5 | — | `08_pipeline_overview.py` |
 
 **Convergence tiers** (the `--traj-tag` suffix; one mental model for every transport figure):
@@ -59,7 +63,8 @@ element (Li/P/S/Cl legend), dashed unit cell. *Stats:* deterministic structures 
 *Source:* `../source_data/main/01_structures.csv`.
 
 **Fig. 2 | Production conductivity (416-atom, foundation MACE-MP-0 vs MatterSim).**
-`../figures/main/03_arrhenius_prod.*` + `../figures/main/03_sigma300_vs_expt_prod.*` — *[headline result]*
+`../figures/main/03_transport_prod.*` — *[headline result]*
+(**a**) Arrhenius fit; (**b**) σ(300 K) bars vs the two experimental references.
 Arrhenius plot in the linear form (log₁₀ σT vs 1000/T — points=MD, line=fit, ★=300 K extrapolation,
 ✕=experiment) + the σ(300 K) bars vs experiment, one pair of curves/bars per potential. 2×2×2
 supercell, 200 ps, three temperatures, both potentials. **Result: MACE σ(300 K)=5.55 [4.2, 7.3] mS cm⁻¹
@@ -74,12 +79,13 @@ opposite directions with better sampling: MACE's over-prediction shrinks toward 
 σ; error bars = kinisi bootstrap 1σ on D (GLS, MSD autocorrelation) propagated to σ; Arrhenius =
 **weighted** least squares of ln(σT) vs 1/T (each T weighted by its kinisi σ uncertainty, Mo-group `aimd`
 standard), σ(300 K) reported with the propagated [min, max] interval. *Source:*
-`../source_data/main/03_arrhenius_prod.csv`, `03_sigma300_vs_expt_prod.csv`.
+`../source_data/main/03_transport_prod.csv`.
 
 **Fig. 3 | DFT fine-tuning of MACE-MP-0.** `../figures/main/04_finetune_convergence.*` +
-`../figures/main/03_arrhenius_ft.*` + `../figures/main/03_sigma300_vs_expt_ft.*` — *[fine-tuning + its effect]*
+`../figures/main/03_transport_ft.*` — *[fine-tuning + its effect]*
 (**04 a,b**) validation force / energy RMSE vs epoch against the foundation baseline (dashed);
-~epoch-90 spike = SWA stage-two restart. (**03_ft**) the fine-tuned model's Arrhenius + σ(300 K).
+~epoch-90 spike = SWA stage-two restart. (**03_transport_ft a,b**) the fine-tuned model's
+Arrhenius fit + σ(300 K) bars.
 **Result: validation force RMSE 234→62 meV Å⁻¹; the fine-tuned σ(300 K)=0.45 [0.31, 0.66] mS cm⁻¹
 (0.14×) — i.e. the potential stiffened (Eₐ 0.265→0.335 eV), so foundation over-predicts and fine-tune
 under-predicts, bracketing experiment (and robustly so: the production [4.2, 7.3] and fine-tuned
@@ -87,7 +93,7 @@ under-predicts, bracketing experiment (and robustly so: the production [4.2, 7.3
 snapshots, 22 train / 5
 validation (seed 0); metric = held-out validation RMSE; baseline = MACE-MP-0 small (pre-fine-tune);
 no test set (small-data delta fine-tune). *Source:* `../source_data/main/04_finetune_convergence.csv`,
-`03_arrhenius_ft.csv`, `03_sigma300_vs_expt_ft.csv`.
+`03_transport_ft.csv`.
 
 **Fig. 4 | Cl-excess doping trend.** `../figures/main/07_doping_trend.*` — *[composition-property trend]*
 (**a**) σ(300 K) vs Cl content in Li₆₋ₓPS₅₋ₓCl₁₊ₓ (x=0/0.25/0.5/0.75), log y — ~29× monotonic
@@ -126,32 +132,35 @@ eV/atom). *Stats:* n=1 Langevin-NVT trajectory per T per potential (friction 0.0
 every 50). *Source:* `../source_data/supplementary/02_md_stability_mace{,_prod,_ft}.csv`,
 `../source_data/supplementary/02_md_stability_mattersim_prod.csv`.
 
-**Fig. S2 | Baseline transport & sampling convergence.** `../figures/supplementary/03_arrhenius{,_long}.*` +
-`../figures/supplementary/03_sigma300_vs_expt{,_long}.*` — *[baseline → convergence]*
+**Fig. S2 | Baseline transport & sampling convergence.**
+`../figures/supplementary/03_transport_convergence.*` — *[baseline → convergence]*
+One row per sampling tier — (**a,b**) 52-atom / 50 ps, (**c,d**) 52-atom / 150 ps; left =
+Arrhenius, right = σ(300 K) bars.
 Untuned MACE + MatterSim at 50 ps (baseline) and 150 ps (`_long`). Both universal potentials
 over-predict single-crystal σ at 50 ps; extending to 150 ps converges them downward — MACE
 22.7→12.5 mS cm⁻¹ (7.2×→4.0×, R² 0.79→0.999), **MatterSim 14.1→1.79 (4.5×→0.57×, R² 0.83→0.982,
 the closest single run to experiment)** — showing the short-run over-prediction is largely unconverged-MSD
-statistics, not physics. *Stats:* as Fig. 2. *Source:* `../source_data/supplementary/03_arrhenius{,_long}.csv`,
-`03_sigma300_vs_expt{,_long}.csv`.
+statistics, not physics. *Stats:* as Fig. 2. *Source:*
+`../source_data/supplementary/03_transport_convergence.csv`.
 
-**Fig. S3 | Per-composition Arrhenius, Cl-excess series.**
-`../figures/supplementary/03_arrhenius_dope_cl{100,125,150,175}.*` + `../figures/supplementary/03_sigma300_dope_cl{100,125,150,175}.*`
-— *[Fig. 4 variants]* The four single-composition Arrhenius fits (log₁₀ σT vs 1000/T) and σ(300 K)
-bars underlying Fig. 4's trend, one per Cl content (`--no-expt`: no per-composition experimental
-reference exists for the non-anchor compositions). *Stats:* as Fig. 2. *Source:*
-`../source_data/supplementary/03_arrhenius_dope_cl{100,125,150,175}.csv`, `03_sigma300_dope_cl{100,125,150,175}.csv`.
+**Fig. S3 | Per-composition transport, Cl-excess series.**
+`../figures/supplementary/03_transport_dope.*` — *[Fig. 4 variants]*
+One row per Cl content — (**a,b**) Cl 1.00, (**c,d**) 1.25, (**e,f**) 1.50, (**g,h**) 1.75;
+left = the single-composition Arrhenius fit (log₁₀ σT vs 1000/T), right = its σ(300 K) bar —
+the fits underlying Fig. 4's trend (`--no-expt`: no per-composition experimental reference
+exists for the non-anchor compositions). *Stats:* as Fig. 2. *Source:*
+`../source_data/supplementary/03_transport_dope.csv`.
 
-**Fig. S4 | Per-lead Arrhenius fits and σ(300 K), W11 funnel leads.**
-`../figures/supplementary/03_arrhenius_lead_{li20si3p3s23cl,li8tis6,li3ps4_gen016,lips3_gen021}.*` +
-`../figures/supplementary/03_sigma300_lead_{…}.*` — *[Fig. 5 variants]*
-The four single-lead Arrhenius fits and σ(300 K) bars underlying Fig. 5, one pair per lead
+**Fig. S4 | Per-lead transport, W11 funnel leads.**
+`../figures/supplementary/03_transport_leads.*` — *[Fig. 5 variants]*
+One row per lead, in upstream prior order — (**a,b**) Li₂₀Si₃P₃S₂₃Cl, (**c,d**) Li₈TiS₆,
+(**e,f**) Li₃PS₄ gen016, (**g,h**) LiPS₃ gen021; left = Arrhenius fit, right = σ(300 K) bar
 (`--no-expt`). Weighted-fit values: Li₂₀Si₃P₃S₂₃Cl **29 [18, 46]** mS cm⁻¹ (Eₐ 0.199 eV, R² 0.994);
 LiPS₃ **10 [5.4, 20]** (0.243, 0.996); Li₃PS₄ gen016 5.5×10⁻³ [2×10⁻³, 1.5×10⁻²] (0.545, R² 0.87);
 Li₈TiS₆ 9.0×10⁻⁴ [3.3×10⁻⁴, 2.5×10⁻³] (0.602, R² 0.77). The two near-insulators fit poorly (few
 uncorrelated hops even at 600 K → wide bands, low R²) but sit orders of magnitude below the
 survivors, so the verdicts are unambiguous. *Stats:* as Fig. 2. *Source:*
-`../source_data/supplementary/03_arrhenius_lead_<key>.csv`, `03_sigma300_lead_<key>.csv`.
+`../source_data/supplementary/03_transport_leads.csv`.
 
 **Fig. S5 | Portfolio pipeline overview.**
 `../figures/supplementary/08_pipeline_overview.{png,svg}` — *[context]*

@@ -39,6 +39,8 @@ EXPT_COLOR = ps.EXPT_COLOR
 # experimental Li6PS5Cl room-T ionic conductivity references (mS/cm)
 EXPT = {"Li6PS5Cl (sintered)": 3.15, "Li6PS5Cl (mechanochem.)": 1.33}
 EXPT_MAIN = 3.15
+# display names -- the internal keys stay lowercase slugs (CLI tags / file names)
+MLIP_PRETTY = {"mace": "MACE", "mattersim": "MatterSim"}
 TRAJ_RE = re.compile(r"(?P<mlip>[a-zA-Z]+)_(?P<T>\d+)K\.traj$")
 
 
@@ -58,11 +60,17 @@ def _sigma_model(T, fit):
     return np.exp(fit["slope"] / T + fit["intercept"]) / T
 
 
+def _fmt_sigma(v):
+    """Human-readable sigma across 6 decades: no scientific notation, no '0.0' for
+    near-insulators (9e-4 -> '0.0009', 5.55 -> '5.5', 212.8 -> '213')."""
+    return f"{v:.0f}" if abs(v) >= 100 else f"{v:.2g}"
+
+
 def _arrhenius_panel(ax, per_mlip, fits, yfunc):
     """Draw MD points + Arrhenius fit + 300 K star, with a direct in-colour label beside each fit
     line (no legend). yfunc maps (sigma, T) to the panel's y-value; the caller owns the y-limits,
     the experiment reference and axis labels."""
-    label = {"mace": "MACE", "mattersim": "MatterSim"}
+    label = MLIP_PRETTY
     side = {"mace": 1, "mattersim": -1}          # +1 = label above its line, -1 = below
     Tgrid = np.linspace(290, 1100, 200)
     for mlip, rows in per_mlip.items():
@@ -99,12 +107,11 @@ def _arrhenius_panel(ax, per_mlip, fits, yfunc):
     ax.axvline(1000.0 / 300, ls=":", color=ps.PALETTE["neutral_mid"], lw=0.6)
 
 
-def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
-    """Arrhenius plot in the linear form that is actually fitted: log10(sigma*T) vs 1000/T
+def _arrhenius_ax(ax, per_mlip, fits, expt_main=EXPT_MAIN):
+    """Arrhenius panel in the linear form that is actually fitted: log10(sigma*T) vs 1000/T
     (ln(sigma*T) = -Ea/kT + c). Points = MD (kinisi error bars), line = fit, star = 300 K
     extrapolation, X = experiment (omitted when expt_main is None, e.g. literature-blank
-    W11 leads); corner box gives Ea, sigma300, R^2. Single panel."""
-    fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.2))
+    W11 leads); corner box gives Ea, sigma300, R^2."""
     yT = lambda s, T: np.log10(s * T)
     _arrhenius_panel(ax, per_mlip, fits, yT)
     data_yT = [yT(r["sigma_mS_cm"], r["T"]) for rows in per_mlip.values() for r in rows]
@@ -125,53 +132,38 @@ def _plot_arrhenius(per_mlip, fits, path, expt_main=EXPT_MAIN):
         f = fits[m]
         ea = (f"{f['Ea_eV']:.2f}$\\pm${f['Ea_err_eV']:.2f}" if f.get("Ea_err_eV") is not None
               else f"{f['Ea_eV']:.2f}")
-        s3 = (f"{f['sigma300_mS_cm']:.1f} [{f['sigma300_min_mS_cm']:.1f}, {f['sigma300_max_mS_cm']:.1f}]"
-              if f.get("sigma300_min_mS_cm") is not None else f"{f['sigma300_mS_cm']:.1f}")
-        return f"{m}: $E_a$ {ea} eV · $\\sigma_{{300}}$ {s3} · $R^2$ {f['R2']:.3f}"
+        s3 = (f"{_fmt_sigma(f['sigma300_mS_cm'])} [{_fmt_sigma(f['sigma300_min_mS_cm'])}, "
+              f"{_fmt_sigma(f['sigma300_max_mS_cm'])}]"
+              if f.get("sigma300_min_mS_cm") is not None else _fmt_sigma(f["sigma300_mS_cm"]))
+        return f"{MLIP_PRETTY.get(m, m)}: $E_a$ {ea} eV · $\\sigma_{{300}}$ {s3} · $R^2$ {f['R2']:.3f}"
     stats = [_stat(m) for m in per_mlip if fits.get(m) and np.isfinite(fits[m].get("R2", np.nan))]
     if stats:
         ax.text(0.03, 0.03, "\n".join(stats), transform=ax.transAxes,
                 fontsize=ps.FS_ANNOT, ha="left", va="bottom", color=ps.PALETTE["neutral_dark"])
     ax.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
-    src_rows = []
-    for m, rows in per_mlip.items():
-        f = fits.get(m, {}) or {}
-        for r in rows:
-            src_rows.append([m, r["T"], r["sigma_mS_cm"], r.get("kinisi_sigma_std_mS_cm", ""),
-                             f.get("Ea_eV", ""), f.get("Ea_err_eV", ""), f.get("sigma300_mS_cm", ""),
-                             f.get("sigma300_min_mS_cm", ""), f.get("sigma300_max_mS_cm", ""),
-                             f.get("R2", "")])
-    op.save_source_data(path, ["mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
-                               "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
-                               "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"], src_rows)
-    return ps.finalize_figure(fig, path)[0]
 
 
-def _plot_sigma300_bar(fits, path, expt=EXPT):
-    """Extrapolated sigma(300 K) vs experiment (single-column, log y; expt bars omitted
-    when expt is falsy). No chart title; material + fit provenance belong in the caption."""
-    fig, ax = plt.subplots(figsize=(ps.COL_SINGLE_IN, 3.0))
-    labels, vals, colors, cats = [], [], [], []
+def _sigma300_ax(ax, fits, expt=EXPT):
+    """sigma(300 K) bar panel: extrapolated MLIP value(s) vs experiment (log y; expt bars
+    omitted when expt is falsy). No chart title; material + provenance belong in the caption."""
+    labels, vals, colors = [], [], []
     err_lo, err_hi = [], []          # asymmetric weighted-fit sigma(300 K) interval per bar
-    pretty = {"mace": "MACE", "mattersim": "MatterSim"}   # run type is in the caption/filename
     for mlip, fit in fits.items():
         if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
-            labels.append(pretty.get(mlip, mlip))
+            labels.append(MLIP_PRETTY.get(mlip, mlip))
             v = fit["sigma300_mS_cm"]
             vals.append(v)
             lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
             err_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
             err_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
             colors.append(MLIP_COLORS.get(mlip, ps.PALETTE["neutral_dark"]))
-            cats.append(pretty.get(mlip, mlip))
     for name, v in (expt or {}).items():
-        lab = "sintered\n(expt)" if "sinter" in name else "mech.chem\n(expt)"
+        lab = "Sintered\n(expt)" if "sinter" in name else "Mech.chem\n(expt)"
         labels.append(lab)
         vals.append(v)
         err_lo.append(0.0)
         err_hi.append(0.0)           # experiment = single measured reference, no fit band
         colors.append(ps.PALETTE["neutral_mid"])   # experiment = neutral reference
-        cats.append(lab.replace("\n", " "))
     x = np.arange(len(labels))
     yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
     ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.7,
@@ -182,9 +174,46 @@ def _plot_sigma300_bar(fits, path, expt=EXPT):
     ax.set_xticklabels(labels, fontsize=ps.FS_TICK)
     ax.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
     for xi, v in zip(x, vals):
-        ax.text(xi, v, f"{v:.2g}", ha="center", va="bottom", fontsize=ps.FS_ANNOT)
-    op.save_source_data(path, ["category", "sigma300_mS_cm"], list(zip(cats, vals)))
-    return ps.finalize_figure(fig, path)[0]
+        ax.text(xi, v, _fmt_sigma(v), ha="center", va="bottom", fontsize=ps.FS_ANNOT)
+
+
+def _plot_transport(groups, path):
+    """One combined transport figure: one ROW per group (an Arrhenius panel left, the
+    sigma(300 K) bars right), lettered a, b, c, ... row-major. ``groups`` is a list of
+    dicts with keys row_label / per_mlip / fits / expt / expt_main — a single analysis
+    run passes one group (a two-panel figure); --merge-tags passes one group per tag,
+    replacing what used to be 2N separate single-panel files."""
+    n = len(groups)
+    fig, axes = plt.subplots(n, 2, figsize=(ps.COL_DOUBLE_IN, 2.9 * n), squeeze=False,
+                             gridspec_kw={"width_ratios": [1.45, 1.0]})
+    letters = "abcdefghijklmnop"
+    src_rows = []
+    for i, g in enumerate(groups):
+        axA, axB = axes[i]
+        _arrhenius_ax(axA, g["per_mlip"], g["fits"], expt_main=g["expt_main"])
+        _sigma300_ax(axB, g["fits"], expt=g["expt"])
+        ps.add_panel_label(axA, letters[2 * i])
+        ps.add_panel_label(axB, letters[2 * i + 1])
+        if g.get("row_label"):
+            # row identity as a small right-aligned title over the Arrhenius panel
+            axA.set_title(g["row_label"], loc="right", fontsize=ps.FS_ANNOT,
+                          color=ps.PALETTE["neutral_dark"], pad=3)
+        row_tag = g.get("row_label") or ""
+        for m, rows in g["per_mlip"].items():
+            f = g["fits"].get(m, {}) or {}
+            for r in rows:
+                src_rows.append([row_tag, m, r["T"], r["sigma_mS_cm"],
+                                 r.get("kinisi_sigma_std_mS_cm", ""),
+                                 f.get("Ea_eV", ""), f.get("Ea_err_eV", ""),
+                                 f.get("sigma300_mS_cm", ""), f.get("sigma300_min_mS_cm", ""),
+                                 f.get("sigma300_max_mS_cm", ""), f.get("R2", "")])
+        for name, v in (g["expt"] or {}).items():
+            src_rows.append([row_tag, f"expt {name}", 300.0, v, "", "", "", "", "", "", ""])
+    op.save_source_data(path, ["row", "mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
+                               "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
+                               "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"],
+                        src_rows)
+    return ps.finalize_figure(fig, path, w_pad=2.5)[0]
 
 
 def main():
@@ -195,7 +224,7 @@ def main():
     ap.add_argument("--timestep", type=float, default=1.0, help="fallback fs if no md_runs.json")
     ap.add_argument("--log-every", type=int, default=50, help="fallback frame spacing")
     ap.add_argument("--traj-tag", default="", help="analyse data/traj{tag}/ + md_runs{tag}.json "
-                    "and write 03_*{tag}/metrics{tag} (match 02's --traj-tag)")
+                    "and write 03_transport{tag}.png + metrics{tag}.json (match 02's --traj-tag)")
     ap.add_argument("--system", default="Li6PS5Cl", help="material label written to metrics "
                     "(W11 leads: the lead formula)")
     ap.add_argument("--no-expt", action="store_true", help="omit the Li6PS5Cl experimental "
@@ -205,9 +234,54 @@ def main():
                     "figures from an existing data/metrics{tag}.json (its per_run D/kinisi "
                     "errors). Reproducible after the raw trajectories are deleted; the "
                     "system + experiment references are read back from the metrics file.")
+    ap.add_argument("--merge-tags", default=None,
+                    help="comma-separated traj-tags merged into ONE multi-row figure (one row "
+                    "per tag: Arrhenius | sigma300 bars, panels lettered a, b, c, ...), each "
+                    "read back from its data/metrics{tag}.json like --from-metrics (an empty "
+                    "item = the untagged baseline). Writes 03_transport_<merge-name>.png and "
+                    "does NOT touch any metrics file.")
+    ap.add_argument("--merge-name", default="merged",
+                    help="figure-name suffix for --merge-tags: 03_transport_<merge-name>.png")
+    ap.add_argument("--merge-labels", default=None,
+                    help="comma-separated per-row labels for --merge-tags (mathtext ok); "
+                    "defaults to the tags themselves")
     args = ap.parse_args()
     expt, expt_main = (None, None) if args.no_expt else (EXPT, EXPT_MAIN)
     ps.apply_publication_style()
+
+    if args.merge_tags is not None:
+        tags = args.merge_tags.split(",")
+        labels = (args.merge_labels.split(",") if args.merge_labels
+                  else [(t.lstrip("_") or "baseline") for t in tags])
+        if len(labels) != len(tags):
+            sys.exit(f"--merge-labels: {len(labels)} labels for {len(tags)} tags")
+        groups = []
+        for tag, lab in zip(tags, labels):
+            mpath = os.path.join(args.data_dir, f"metrics{tag}.json")
+            if not os.path.exists(mpath):
+                sys.exit(f"--merge-tags: {mpath} not found")
+            md = json.load(open(mpath))
+            rows = md.get("per_run", [])
+            if not rows:
+                sys.exit(f"--merge-tags: {mpath} has no per_run rows")
+            per = {}
+            for r in rows:
+                per.setdefault(r["mlip"], []).append(r)
+            expt_g = md.get("experiment_mS_cm")
+            expt_main_g = (expt_g.get("Li6PS5Cl (sintered)")
+                           or next(iter(expt_g.values()), None)) if expt_g else None
+            fits_g = {}
+            for m, rs in per.items():
+                rs.sort(key=lambda r: r["T"])
+                fits_g[m] = tr.arrhenius_fit(
+                    [r["T"] for r in rs], [r["sigma_mS_cm"] for r in rs],
+                    [r.get("kinisi_sigma_std_mS_cm") for r in rs])
+            groups.append(dict(row_label=lab, per_mlip=per, fits=fits_g,
+                               expt=expt_g, expt_main=expt_main_g))
+        os.makedirs(args.fig_dir, exist_ok=True)
+        out = _plot_transport(groups, op.fig(args.fig_dir, f"03_transport_{args.merge_name}.png"))
+        print(f"[03] merged {len(groups)} tags -> {os.path.relpath(out, HERE)}")
+        return
 
     existing_metrics = None
     if args.from_metrics:
@@ -281,16 +355,12 @@ def main():
             print(f"[03] {mlip}: need >=2 temperatures for Arrhenius (have {fit['n_points']})")
 
     os.makedirs(args.fig_dir, exist_ok=True)
-    figs = {}
     if any(len(r) >= 1 for r in per_mlip.values()):
-        figs["arrhenius"] = _plot_arrhenius(per_mlip, fits,
-                                            op.fig(args.fig_dir, f"03_arrhenius{args.traj_tag}.png"),
-                                            expt_main=expt_main)
-    if any(np.isfinite(f.get("sigma300_mS_cm", np.nan)) for f in fits.values()):
-        name = f"03_sigma300{'_vs_expt' if expt else ''}{args.traj_tag}.png"
-        figs["sigma300"] = _plot_sigma300_bar(fits, op.fig(args.fig_dir, name), expt=expt)
-    for k, p in figs.items():
-        print(f"[03] figure[{k}] -> {os.path.relpath(p, HERE)}")
+        # one two-panel figure per tag (a: Arrhenius, b: sigma300 bars) -- previously two files
+        out = _plot_transport([dict(row_label=None, per_mlip=per_mlip, fits=fits,
+                                    expt=expt, expt_main=expt_main)],
+                              op.fig(args.fig_dir, f"03_transport{args.traj_tag}.png"))
+        print(f"[03] figure[transport] -> {os.path.relpath(out, HERE)}")
 
     if existing_metrics is not None:
         # --from-metrics: preserve per_run + all original metadata; swap in the re-fit only.
