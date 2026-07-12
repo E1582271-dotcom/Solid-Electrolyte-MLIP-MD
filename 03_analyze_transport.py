@@ -280,7 +280,8 @@ def _plot_transport_overlay(groups, path):
             data_yT += list(yT(sig, T))
             fit = g["fits"].get(m)
             if fit and np.isfinite(fit["Ea_eV"]):
-                lab = g.get("row_label") or MLIP_PRETTY.get(m, m)
+                # multi-line row labels (used by the bar panel's x ticks) join to one line here
+                lab = (g.get("row_label") or MLIP_PRETTY.get(m, m)).replace("\n", " ")
                 lab += f"  ($E_a$ {fit['Ea_eV']:.2f} eV)"
                 axA.plot(1000.0 / Tgrid, yT(_sigma_model(Tgrid, fit), Tgrid), color=c,
                          lw=1.0, label=lab)

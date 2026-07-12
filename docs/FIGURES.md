@@ -31,7 +31,7 @@ one such row per tag / composition / lead (panels a, b, c, … row-major, row la
 | `supplementary/02_md_stability_<mlip><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
 | `supplementary/03_transport_convergence.png` | Fig. S2 | baseline, long | `03_analyze_transport.py --merge-tags ",_long" --merge-name convergence` |
 | `supplementary/03_transport_dope.png` | Fig. S3 | dope | `03_analyze_transport.py --merge-tags "_dope_cl100,…,_dope_cl175" --merge-name dope --merge-layout overlay` |
-| `supplementary/03_transport_leads.png` | Fig. S4 | lead | `03_analyze_transport.py --merge-tags "_lead_<key>,…" --merge-name leads` |
+| `supplementary/03_transport_leads.png` | Fig. S4 | lead | `03_analyze_transport.py --merge-tags "_lead_<key>,…" --merge-name leads --merge-layout overlay` |
 | `supplementary/08_pipeline_overview.{png,svg}` | Fig. S5 | — | `08_pipeline_overview.py` |
 
 **Convergence tiers** (the `--traj-tag` suffix; one mental model for every transport figure):
@@ -155,14 +155,17 @@ compositions; colours match Fig. 4's composition ramp.) *Stats:* as Fig. 2. *Sou
 
 **Fig. S4 | Per-lead transport, W11 funnel leads.**
 `../figures/supplementary/03_transport_leads.*` — *[Fig. 5 variants]*
-One row per lead, in upstream prior order — (**a,b**) Li₂₀Si₃P₃S₂₃Cl, (**c,d**) Li₈TiS₆,
-(**e,f**) Li₃PS₄ gen016, (**g,h**) LiPS₃ gen021; left = Arrhenius fit, right = σ(300 K) bar
-(`--no-expt`). Weighted-fit values: Li₂₀Si₃P₃S₂₃Cl **29 [18, 46]** mS cm⁻¹ (Eₐ 0.199 eV, R² 0.994);
-LiPS₃ **10 [5.4, 20]** (0.243, 0.996); Li₃PS₄ gen016 5.5×10⁻³ [2×10⁻³, 1.5×10⁻²] (0.545, R² 0.87);
-Li₈TiS₆ 9.0×10⁻⁴ [3.3×10⁻⁴, 2.5×10⁻³] (0.602, R² 0.77). The two near-insulators fit poorly (few
-uncorrelated hops even at 600 K → wide bands, low R²) but sit orders of magnitude below the
-survivors, so the verdicts are unambiguous. *Stats:* as Fig. 2. *Source:*
-`../source_data/supplementary/03_transport_leads.csv`.
+(**a**) The four single-lead Arrhenius fits overlaid in one panel, one series colour per lead
+in upstream prior order, legend carries source + prior rank + fitted Eₐ — the fast conductors
+(shallow slopes) and near-insulators (steep slopes) separate at a glance; (**b**) the four
+σ(300 K) bars in one shared log axis (`--no-expt`). Weighted-fit values: Li₂₀Si₃P₃S₂₃Cl
+**29 [18, 46]** mS cm⁻¹ (Eₐ 0.199 eV, R² 0.994); LiPS₃ **10 [5.4, 20]** (0.243, 0.996);
+Li₃PS₄ gen016 5.5×10⁻³ [2×10⁻³, 1.5×10⁻²] (0.545, R² 0.87); Li₈TiS₆ 9.0×10⁻⁴
+[3.3×10⁻⁴, 2.5×10⁻³] (0.602, R² 0.77). The two near-insulators fit poorly (few uncorrelated
+hops even at 600 K → wide bands, low R²) but sit orders of magnitude below the survivors, so
+the verdicts are unambiguous. Fig. 5 is the annotated headline view of the same comparison
+(baseline reference + verdicts); this is the clean per-fit record. *Stats:* as Fig. 2.
+*Source:* `../source_data/supplementary/03_transport_leads.csv`.
 
 **Fig. S5 | Portfolio pipeline overview.**
 `../figures/supplementary/08_pipeline_overview.{png,svg}` — *[context]*
