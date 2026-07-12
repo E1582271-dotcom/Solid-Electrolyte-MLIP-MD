@@ -243,8 +243,7 @@ def _merged_sigma_ax(ax, groups):
                 colors.append(_SERIES_RAMP[i % len(_SERIES_RAMP)])
     x = np.arange(len(labels))
     yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
-    # keep bars narrow -- a fat bar carries no extra information
-    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.35,
+    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.70,
            yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
                                     ecolor=ps.PALETTE["neutral_black"]))
     ax.margins(x=0.06)
