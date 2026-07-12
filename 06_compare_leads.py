@@ -139,9 +139,10 @@ def main():
         xe_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
         xe_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
     xerr = [xe_lo, xe_hi] if any(xe_lo) or any(xe_hi) else None
-    axB.barh(ypos, vals, color=colors, edgecolor=ps.PALETTE["neutral_black"], linewidth=0.5,
-             xerr=xerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
-                                      ecolor=ps.PALETTE["neutral_black"]))
+    # keep bars narrow -- a fat bar carries no extra information (matches 03's sigma panels)
+    axB.barh(ypos, vals, height=0.45, color=colors, edgecolor=ps.PALETTE["neutral_black"],
+             linewidth=0.5, xerr=xerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
+                                                     ecolor=ps.PALETTE["neutral_black"]))
     axB.set_xscale("log")
     axB.axvline(baseline["sigma300_mS_cm"], color=BASELINE_COLOR, ls="--", lw=0.8, zorder=1)
     axB.text(baseline["sigma300_mS_cm"], len(order) - 0.4, " Li$_6$PS$_5$Cl",

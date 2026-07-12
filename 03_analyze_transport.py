@@ -166,9 +166,11 @@ def _sigma300_ax(ax, fits, expt=EXPT):
         colors.append(ps.PALETTE["neutral_mid"])   # experiment = neutral reference
     x = np.arange(len(labels))
     yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
-    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.7,
+    # keep bars narrow -- a fat bar carries no extra information
+    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.42,
            yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
                                     ecolor=ps.PALETTE["neutral_black"]))
+    ax.margins(x=0.08)
     ax.set_yscale("log")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=ps.FS_TICK)
@@ -259,9 +261,11 @@ def _plot_transport_gridbar(groups, path):
                 colors.append(_SERIES_RAMP[i % len(_SERIES_RAMP)])
     x = np.arange(len(labels))
     yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
-    axB.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.62,
+    # narrow bars: the panel spans the full double-column width, so wide bars look bloated
+    axB.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.35,
             yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
                                      ecolor=ps.PALETTE["neutral_black"]))
+    axB.margins(x=0.06)
     axB.set_yscale("log")
     axB.set_xticks(x)
     axB.set_xticklabels(labels, fontsize=ps.FS_TICK)
