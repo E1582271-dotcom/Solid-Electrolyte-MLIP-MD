@@ -218,10 +218,111 @@ def _plot_transport(groups, path):
     return ps.finalize_figure(fig, path, w_pad=2.5)[0]
 
 
-# same 4-step colour ramp as 07_doping_trend.py's DOPE_COLORS, so a series keeps its
-# colour identity across figures
+# same 4-step colour ramp as 07_doping_trend.py's DOPE_COLORS (and 06_compare_leads'
+# lead colours), so a series keeps its colour identity across figures
 _SERIES_RAMP = [ps.PALETTE["blue_main"], ps.PALETTE["teal"],
                 ps.PALETTE["violet"], ps.PALETTE["red_strong"]]
+
+
+def _merged_sigma_ax(ax, groups):
+    """ONE sigma(300 K) bar panel shared by all groups: one bar per (group, fitted MLIP),
+    bar colour = the group's series colour."""
+    labels, vals, colors, err_lo, err_hi = [], [], [], [], []
+    for i, g in enumerate(groups):
+        for m, fit in g["fits"].items():
+            if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
+                lab = g.get("row_label") or MLIP_PRETTY.get(m, m)
+                if len(g["fits"]) > 1:      # disambiguate multi-MLIP groups
+                    lab += f"\n{MLIP_PRETTY.get(m, m)}"
+                labels.append(lab)
+                v = fit["sigma300_mS_cm"]
+                vals.append(v)
+                lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+                err_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
+                err_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
+                colors.append(_SERIES_RAMP[i % len(_SERIES_RAMP)])
+    x = np.arange(len(labels))
+    yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
+    # keep bars narrow -- a fat bar carries no extra information
+    ax.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.35,
+           yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
+                                    ecolor=ps.PALETTE["neutral_black"]))
+    ax.margins(x=0.06)
+    ax.set_yscale("log")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=ps.FS_TICK)
+    ax.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
+    for xi, v in zip(x, vals):
+        ax.text(xi, v, _fmt_sigma(v), ha="center", va="bottom", fontsize=ps.FS_ANNOT)
+
+
+def _plot_transport_overlay(groups, path):
+    """--merge-layout overlay: ONE Arrhenius panel with every group's fit line overlaid
+    (one series colour per group, legend carries the group label + its Ea) next to ONE
+    merged sigma(300 K) bar panel in the same colours — the two-panel form of a whole
+    series (mirrors 06_compare_leads' panel a). Best for single-MLIP series."""
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(ps.COL_DOUBLE_IN, 3.4), squeeze=True,
+                                   gridspec_kw={"width_ratios": [1.45, 1.0]})
+    yT = lambda s, T: np.log10(s * T)
+    Tgrid = np.linspace(290, 1100, 200)
+    data_yT, ref_yT = [], []
+    expt_main = next((g["expt_main"] for g in groups if g.get("expt_main")), None)
+    for i, g in enumerate(groups):
+        c = _SERIES_RAMP[i % len(_SERIES_RAMP)]
+        for m, rows in g["per_mlip"].items():
+            T = np.array([r["T"] for r in rows])
+            sig = np.array([r["sigma_mS_cm"] for r in rows])
+            rel = np.array([(r.get("kinisi_sigma_std_mS_cm") or 0.0) / r["kinisi_sigma_mS_cm"]
+                            if r.get("kinisi_sigma_mS_cm") else 0.0 for r in rows])
+            axA.errorbar(1000.0 / T, yT(sig, T), yerr=rel / np.log(10.0), fmt="o", ms=3.6,
+                         color=c, mec="white", mew=0.4, elinewidth=0.7, capsize=1.8,
+                         capthick=0.7, zorder=3)
+            data_yT += list(yT(sig, T))
+            fit = g["fits"].get(m)
+            if fit and np.isfinite(fit["Ea_eV"]):
+                lab = g.get("row_label") or MLIP_PRETTY.get(m, m)
+                lab += f"  ($E_a$ {fit['Ea_eV']:.2f} eV)"
+                axA.plot(1000.0 / Tgrid, yT(_sigma_model(Tgrid, fit), Tgrid), color=c,
+                         lw=1.0, label=lab)
+                y300 = yT(fit["sigma300_mS_cm"], 300.0)
+                lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+                if lo and hi and np.isfinite(lo) and np.isfinite(hi):
+                    axA.errorbar([1000.0 / 300], [y300],
+                                 yerr=[[y300 - yT(lo, 300.0)], [yT(hi, 300.0) - y300]],
+                                 fmt="none", ecolor=c, elinewidth=0.8, capsize=2,
+                                 capthick=0.8, zorder=3)
+                axA.scatter([1000.0 / 300], [y300], color=c, marker="*", s=70,
+                            edgecolor=ps.PALETTE["neutral_black"], linewidth=0.4, zorder=4)
+                ref_yT.append(y300)
+    axA.axvline(1000.0 / 300, ls=":", color=ps.PALETTE["neutral_mid"], lw=0.6)
+    axA.text(1000.0 / 300 - 0.03, 0.97, "300 K", transform=axA.get_xaxis_transform(),
+             color=ps.PALETTE["neutral_mid"], fontsize=ps.FS_ANNOT, ha="right", va="top")
+    if expt_main:
+        axA.scatter([1000.0 / 300], [yT(expt_main, 300.0)], marker="X", s=40,
+                    color=EXPT_COLOR, zorder=5)
+        ref_yT.append(yT(expt_main, 300.0))
+    axA.set_ylim(min(ref_yT) - 0.30, max(data_yT) + 0.35)
+    axA.legend(frameon=False, fontsize=ps.FS_ANNOT, loc="lower left", handlelength=1.4)
+    axA.set(xlabel="1000 / $T$  (K$^{-1}$)", ylabel="log$_{10}$ $\\sigma T$  (mS cm$^{-1}$ K)")
+    _merged_sigma_ax(axB, groups)
+    ps.add_panel_label(axA, "a")
+    ps.add_panel_label(axB, "b")
+    src_rows = []
+    for g in groups:
+        row_tag = g.get("row_label") or ""
+        for m, rows in g["per_mlip"].items():
+            f = g["fits"].get(m, {}) or {}
+            for r in rows:
+                src_rows.append([row_tag, m, r["T"], r["sigma_mS_cm"],
+                                 r.get("kinisi_sigma_std_mS_cm", ""),
+                                 f.get("Ea_eV", ""), f.get("Ea_err_eV", ""),
+                                 f.get("sigma300_mS_cm", ""), f.get("sigma300_min_mS_cm", ""),
+                                 f.get("sigma300_max_mS_cm", ""), f.get("R2", "")])
+    op.save_source_data(path, ["row", "mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
+                               "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
+                               "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"],
+                        src_rows)
+    return ps.finalize_figure(fig, path, w_pad=2.5)[0]
 
 
 def _plot_transport_gridbar(groups, path):
@@ -245,33 +346,7 @@ def _plot_transport_gridbar(groups, path):
                          color=ps.PALETTE["neutral_dark"], pad=3)
     # merged sigma(300 K) bars: one bar per group (its fitted MLIP(s)), shared log axis
     axB = fig.add_subplot(gs[nrows_arr, :])
-    labels, vals, colors, err_lo, err_hi = [], [], [], [], []
-    for i, g in enumerate(groups):
-        for m, fit in g["fits"].items():
-            if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
-                lab = g.get("row_label") or MLIP_PRETTY.get(m, m)
-                if len(g["fits"]) > 1:      # disambiguate multi-MLIP groups
-                    lab += f"\n{MLIP_PRETTY.get(m, m)}"
-                labels.append(lab)
-                v = fit["sigma300_mS_cm"]
-                vals.append(v)
-                lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
-                err_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
-                err_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
-                colors.append(_SERIES_RAMP[i % len(_SERIES_RAMP)])
-    x = np.arange(len(labels))
-    yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
-    # narrow bars: the panel spans the full double-column width, so wide bars look bloated
-    axB.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.35,
-            yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
-                                     ecolor=ps.PALETTE["neutral_black"]))
-    axB.margins(x=0.06)
-    axB.set_yscale("log")
-    axB.set_xticks(x)
-    axB.set_xticklabels(labels, fontsize=ps.FS_TICK)
-    axB.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
-    for xi, v in zip(x, vals):
-        axB.text(xi, v, _fmt_sigma(v), ha="center", va="bottom", fontsize=ps.FS_ANNOT)
+    _merged_sigma_ax(axB, groups)
     ps.add_panel_label(axB, letters[n])
     src_rows = []
     for g in groups:
@@ -320,10 +395,11 @@ def main():
     ap.add_argument("--merge-labels", default=None,
                     help="comma-separated per-row labels for --merge-tags (mathtext ok); "
                     "defaults to the tags themselves")
-    ap.add_argument("--merge-layout", default="rows", choices=["rows", "grid-bar"],
+    ap.add_argument("--merge-layout", default="rows", choices=["rows", "grid-bar", "overlay"],
                     help="rows: one row per tag (Arrhenius | sigma bars). grid-bar: "
                     "Arrhenius panels on a 2-column grid + ONE merged sigma(300 K) bar "
-                    "panel with one bar per tag (for monotonic series like Cl-excess)")
+                    "panel. overlay: ONE Arrhenius panel with all fits overlaid in series "
+                    "colours + the merged bar panel (two panels total; single-MLIP series)")
     args = ap.parse_args()
     expt, expt_main = (None, None) if args.no_expt else (EXPT, EXPT_MAIN)
     ps.apply_publication_style()
@@ -358,7 +434,8 @@ def main():
             groups.append(dict(row_label=lab, per_mlip=per, fits=fits_g,
                                expt=expt_g, expt_main=expt_main_g))
         os.makedirs(args.fig_dir, exist_ok=True)
-        plot = _plot_transport_gridbar if args.merge_layout == "grid-bar" else _plot_transport
+        plot = {"grid-bar": _plot_transport_gridbar,
+                "overlay": _plot_transport_overlay}.get(args.merge_layout, _plot_transport)
         out = plot(groups, op.fig(args.fig_dir, f"03_transport_{args.merge_name}.png"))
         print(f"[03] merged {len(groups)} tags ({args.merge_layout}) -> {os.path.relpath(out, HERE)}")
         return
