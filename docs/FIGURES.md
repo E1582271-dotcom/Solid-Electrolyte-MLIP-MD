@@ -6,16 +6,47 @@ tracks **PNG (600 dpi)**; the editable **SVG + vector PDF** submission bundle (`
 `finalize_figure(..., formats=("png","svg","pdf"))`. Figures are drawn at
 Nature column widths (single ≈89 mm, double ≈183 mm), 5–7 pt sans text, 8 pt bold lowercase panel
 letters, **full 4-sided box frame**, **direct in-colour curve labels (no legend boxes)**, kinisi
-error bars, restrained CVD-safe palette. Figures are tiered into `figures/main/` (the four headline
+error bars, restrained CVD-safe palette. Figures are tiered into `figures/main/` (the five headline
 figures below) and `figures/supplementary/`; every quantitative figure has a matching
 `source_data/<tier>/<name>.csv`. Paths below are relative to this `docs/` folder (`../figures/…`).
+
+## How the files are named (read this first)
+
+File names carry **provenance, not figure order**: the `NN_` prefix is the pipeline script that
+draws the file, and the suffix names the convergence tier / composition / lead. The figure numbers
+(Fig. 1–5, S1–S5) live only in this document. Map:
+
+| file (`figures/<tier>/…`) | figure | tier | produced by |
+|---|---|---|---|
+| `main/01_structures.png` | Fig. 1 | — | `01_build_structure.py` |
+| `main/03_arrhenius_prod.png` · `main/03_sigma300_vs_expt_prod.png` | Fig. 2 | prod | `03_analyze_transport.py --traj-tag _prod` |
+| `main/04_finetune_convergence.png` | Fig. 3 | ft | `finetune/21_plot_finetune.py` |
+| `main/03_arrhenius_ft.png` · `main/03_sigma300_vs_expt_ft.png` | Fig. 3 | ft | `03_analyze_transport.py --traj-tag _ft` |
+| `main/07_doping_trend.png` | Fig. 4 | dope | `07_doping_trend.py` |
+| `main/06_compare_leads.png` | Fig. 5 | lead | `06_compare_leads.py` |
+| `supplementary/02_md_stability_<mlip><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
+| `supplementary/03_arrhenius{,_long}.png` · `03_sigma300_vs_expt{,_long}.png` | Fig. S2 | baseline, long | `03_analyze_transport.py [--traj-tag _long]` |
+| `supplementary/03_{arrhenius,sigma300}_dope_cl<NNN>.png` (×8) | Fig. S3 | dope | `03_analyze_transport.py --traj-tag _dope_cl<NNN> --no-expt` |
+| `supplementary/03_{arrhenius,sigma300}_lead_<key>.png` (×8) | Fig. S4 | lead | `03_analyze_transport.py --traj-tag _lead_<key> --no-expt` |
+| `supplementary/08_pipeline_overview.{png,svg}` | Fig. S5 | — | `08_pipeline_overview.py` |
+
+**Convergence tiers** (the `--traj-tag` suffix; one mental model for every transport figure):
+
+| tag | cell × duration | role |
+|---|---|---|
+| *(none)* | 52-atom × 50 ps | thin baseline — MSD **not** converged, wide bands |
+| `_long` | 52-atom × 150 ps | convergence check |
+| `_prod` | **416-atom × 200 ps** | **production headline** (σ = 5.55 mS/cm) |
+| `_ft` | 416-atom × 200 ps | fine-tuned MACE, same protocol as `_prod` |
+| `_dope_cl<NNN>` | 392–416-atom × 150 ps | screening-grade, Cl-excess series |
+| `_lead_<key>` | 96–200-atom × 150 ps | screening-grade, W11 funnel leads |
 
 ## The story (why each figure exists)
 System → does the MD conserve? → do untuned universal potentials get σ right? (they over-predict) →
 is that a sampling artefact? (longer MD converges it down) → production-quality σ(300 K) → can DFT
-fine-tuning improve the potential? → what does fine-tuning do to σ? Figures are numbered 01→04 along
-this arc; the four `_tag` transport variants (baseline / `_long` / `_prod` / `_ft`) are the successive
-steps of that argument.
+fine-tuning improve the potential? → what does fine-tuning do to σ? → do the upstream funnel leads
+survive the same protocol? (the W11 rank reversal, Fig. 5). The `_tag` transport variants
+(baseline / `_long` / `_prod` / `_ft` / `_dope` / `_lead`) are the successive steps of that argument.
 
 ---
 
@@ -65,7 +96,21 @@ increase. (**b**) Eₐ vs Cl content, linear y — monotonic decrease (0.256→0
 the 416-atom/200 ps production tier of Fig. 2) — the Cl=1.0 anchor here (7.31 mS cm⁻¹) is therefore
 not the production Li₆PS₅Cl baseline (5.55 mS cm⁻¹); same order of magnitude, different convergence
 tier, not a discrepancy. *Stats:* as Fig. 2 (kinisi bootstrap error bars, weighted Arrhenius fit, 3 T per
-composition). *Source:* `../source_data/supplementary/07_doping_trend.csv`.
+composition). *Source:* `../source_data/main/07_doping_trend.csv`.
+
+**Fig. 5 | W11 funnel handoff — four upstream leads under the same MD protocol.**
+`../figures/main/06_compare_leads.*` — *[funnel validation]*
+(**a**) Arrhenius fits of the four leads handed down by the upstream funnel (Project 1 screen:
+Li₂₀Si₃P₃S₂₃Cl, Li₈TiS₆; Project 3 generation: Li₃PS₄ gen016, LiPS₃ gen021), with the Li₆PS₅Cl
+production baseline dashed; (**b**) σ(300 K) bars annotated with each lead's upstream prior rank.
+**Result: rank reversal — LiPS₃, ranked *last* (4th) by the coarse prior, certifies as the
+2nd-strongest conductor (10 [5.4, 20] mS cm⁻¹, Eₐ = 0.243 eV), while 2nd-ranked Li₈TiS₆ is falsified
+as near-insulating (~9×10⁻⁴ mS cm⁻¹). Two of four leads survive, one from each upstream source —
+the funnel screens by the actual chemistry, not by which upstream method was "right".**
+Screening-grade certification (150 ps tier, `--no-expt`: no experimental σ exists for these leads);
+the near-insulating leads carry wide bands but sit orders of magnitude below the survivors with no
+overlap, so the verdicts are unambiguous. *Stats:* as Fig. 2 (kinisi bootstrap, weighted Arrhenius).
+*Source:* `../source_data/main/06_compare_leads.csv`.
 
 ## Supplementary figures
 
@@ -96,3 +141,24 @@ statistics, not physics. *Stats:* as Fig. 2. *Source:* `../source_data/supplemen
 bars underlying Fig. 4's trend, one per Cl content (`--no-expt`: no per-composition experimental
 reference exists for the non-anchor compositions). *Stats:* as Fig. 2. *Source:*
 `../source_data/supplementary/03_arrhenius_dope_cl{100,125,150,175}.csv`, `03_sigma300_dope_cl{100,125,150,175}.csv`.
+
+**Fig. S4 | Per-lead Arrhenius fits and σ(300 K), W11 funnel leads.**
+`../figures/supplementary/03_arrhenius_lead_{li20si3p3s23cl,li8tis6,li3ps4_gen016,lips3_gen021}.*` +
+`../figures/supplementary/03_sigma300_lead_{…}.*` — *[Fig. 5 variants]*
+The four single-lead Arrhenius fits and σ(300 K) bars underlying Fig. 5, one pair per lead
+(`--no-expt`). Weighted-fit values: Li₂₀Si₃P₃S₂₃Cl **29 [18, 46]** mS cm⁻¹ (Eₐ 0.199 eV, R² 0.994);
+LiPS₃ **10 [5.4, 20]** (0.243, 0.996); Li₃PS₄ gen016 5.5×10⁻³ [2×10⁻³, 1.5×10⁻²] (0.545, R² 0.87);
+Li₈TiS₆ 9.0×10⁻⁴ [3.3×10⁻⁴, 2.5×10⁻³] (0.602, R² 0.77). The two near-insulators fit poorly (few
+uncorrelated hops even at 600 K → wide bands, low R²) but sit orders of magnitude below the
+survivors, so the verdicts are unambiguous. *Stats:* as Fig. 2. *Source:*
+`../source_data/supplementary/03_arrhenius_lead_<key>.csv`, `03_sigma300_lead_<key>.csv`.
+
+**Fig. S5 | Portfolio pipeline overview.**
+`../figures/supplementary/08_pipeline_overview.{png,svg}` — *[context]*
+Schematic of the three-project funnel: Project 1 (CatBoost screen + adversarial audit, 328 → 184)
+and Project 3 (MatterGen + self-consistent MLIP hull, 64 → 43 S.U.N.) each hand leads to this
+repo's same-protocol MLIP-MD validation, with the future electrochemical closure (EIS) dashed.
+The rank-reversal callouts quote Fig. 5. All box numbers are hardcoded literals with source-file
+comments (`08_pipeline_overview.py`) so the figure renders standalone; it is embedded as the
+banner of all three portfolio repo READMEs. *Stats:* schematic (none). *Source:*
+`../source_data/supplementary/08_pipeline_overview.csv`.

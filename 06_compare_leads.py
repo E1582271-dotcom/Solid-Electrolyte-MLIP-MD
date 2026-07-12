@@ -168,10 +168,10 @@ def main():
     import pandas as pd
     pd.DataFrame(rows, columns=["lead", "source_project", "prior_log10_sigma",
                                 "prior_rank", "sigma300_mS_cm", "Ea_eV", "R2"]).to_csv(
-        os.path.join(SRC, src_tier, "fig06_compare_leads.csv"), index=False)
+        os.path.join(SRC, src_tier, "06_compare_leads.csv"), index=False)
     ps.finalize_figure(fig, op.fig(FIG, "06_compare_leads.png"), w_pad=3.0)
     print(f"Saved figures/{src_tier}/06_compare_leads.png, "
-          f"source_data/{src_tier}/fig06_compare_leads.csv")
+          f"source_data/{src_tier}/06_compare_leads.csv")
 
 
 if __name__ == "__main__":

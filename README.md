@@ -221,7 +221,7 @@ Provenance: `data/leads/leads.json`.
 | Li3PS4 (gen016) | P3 | 3rd | 5.5e-3 | 0.545 | 0.87 | ❌ mediocre |
 | LiPS3 (gen021) | P3 | 4th (**worst**) | **10** | 0.243 | 0.996 | ✅ strong candidate |
 
-![Arrhenius comparison of the four leads + upstream prior rank annotation](figures/supplementary/06_compare_leads.png)
+![Arrhenius comparison of the four leads + upstream prior rank annotation](figures/main/06_compare_leads.png)
 
 (sigma(300 K) is the weighted extrapolation; the near-insulating leads carry very wide
 bands -- Li8TiS6 [3e-4, 2e-3], Li3PS4 [2e-3, 2e-2] -- but sit orders of magnitude below the

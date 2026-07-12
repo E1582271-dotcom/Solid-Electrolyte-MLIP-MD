@@ -103,12 +103,12 @@ def main():
            color=ps.PALETTE["neutral_black"])
     ax.text(3.95 + 1.575, 1.15 + 1.85 - 0.48, "Same-protocol MLIP-MD,\n4 funnel leads",
            ha="center", va="top", fontsize=ps.FS_ANNOT, color=ps.PALETTE["neutral_dark"])
-    # Ranking-reversal callouts: source_data/fig06_compare_leads.csv (this repo)
-    # LiPS3 (gen021): prior_rank 4, sigma300 10.19 mS/cm -> 2nd by sigma among the 4 leads
+    # Ranking-reversal callouts: source_data/main/06_compare_leads.csv (this repo)
+    # LiPS3 (gen021): prior_rank 4, sigma300 10.35 mS/cm -> 2nd by sigma among the 4 leads
     ax.text(3.95 + 1.575, 1.15 + 0.62,
            "LiPS$_3$: prior rank 4th (worst) → MD rank 2nd (confirmed)",
            ha="center", va="center", fontsize=ps.FS_ANNOT, color=C_LIPS3)
-    # Li8TiS6: prior_rank 2, sigma300 1.4e-7 mS/cm (near-insulator) -> falsified
+    # Li8TiS6: prior_rank 2, sigma300 ~9e-4 mS/cm (near-insulator) -> falsified
     ax.text(3.95 + 1.575, 1.15 + 0.30,
            "Li$_8$TiS$_6$: prior rank 2nd → MD falsified (insulator)",
            ha="center", va="center", fontsize=ps.FS_ANNOT, color=C_LI8TIS6)

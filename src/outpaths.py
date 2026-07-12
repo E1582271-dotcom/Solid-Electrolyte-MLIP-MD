@@ -18,13 +18,14 @@ import os
 
 from src import plotstyle as ps
 
-# The seven headline stems = docs/FIGURES.md "Main figures" (Fig. 1–4). Everything else
-# (02 stability, baseline/_long transport, per-composition doping, per-lead, the
-# leads comparison and the pipeline schematic) is supplementary.
+# The eight headline stems = docs/FIGURES.md "Main figures" (Fig. 1–5). Everything else
+# (02 stability, baseline/_long transport, per-composition doping, per-lead, and the
+# pipeline schematic) is supplementary.
 MAIN = {
     "01_structures",
     "03_arrhenius_prod", "03_sigma300_vs_expt_prod",
     "04_finetune_convergence", "03_arrhenius_ft", "03_sigma300_vs_expt_ft",
+    "06_compare_leads",
     "07_doping_trend",
 }
 
