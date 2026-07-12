@@ -117,10 +117,10 @@ stage-two restart).
 ![Fine-tuning convergence: validation force / energy RMSE vs epoch against the foundation-model baseline](../figures/main/04_finetune_convergence.png)
 
 MD stability (conservation check -- temperature and energy stable over time, no
-blow-up/drift) is shown in `../figures/supplementary/02_md_stability_mace{,_prod,_ft}.*` (baseline 50 ps /
+blow-up/drift) is shown in `../figures/supplementary/02_MD_stability_MACE{,_prod,_ft}.*` (baseline 50 ps /
 production 200 ps, 416-atom / fine-tuned 200 ps).
 
-![MD conservation check for the 416-atom / 200 ps production run: temperature and energy stable, no drift](../figures/supplementary/02_md_stability_mace_prod.png)
+![MD conservation check for the 416-atom / 200 ps production run: temperature and energy stable, no drift](../figures/supplementary/02_MD_stability_MACE_prod.png)
 
 ### 3.1 Literature benchmark (result evaluation)
 

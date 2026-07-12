@@ -28,7 +28,7 @@ one such row per tag / composition / lead (panels a, b, c, … row-major, row la
 | `main/03_transport_ft.png` | Fig. 3 | ft | `03_analyze_transport.py --traj-tag _ft` |
 | `main/07_doping_trend.png` | Fig. 4 | dope | `07_doping_trend.py` |
 | `main/06_compare_leads.png` | Fig. 5 | lead | `06_compare_leads.py` |
-| `supplementary/02_md_stability_<mlip><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
+| `supplementary/02_MD_stability_<MLIP><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
 | `supplementary/03_transport_convergence.png` | Fig. S2 | baseline, long | `03_analyze_transport.py --merge-tags ",_long" --merge-name convergence` |
 | `supplementary/03_transport_dope.png` | Fig. S3 | dope | `03_analyze_transport.py --merge-tags "_dope_cl100,…,_dope_cl175" --merge-name dope --merge-layout overlay` |
 | `supplementary/03_transport_leads.png` | Fig. S4 | lead | `03_analyze_transport.py --merge-tags "_lead_<key>,…" --merge-name leads --merge-layout overlay` |
@@ -121,7 +121,7 @@ overlap, so the verdicts are unambiguous. *Stats:* as Fig. 2 (kinisi bootstrap, 
 ## Supplementary figures
 
 **Fig. S1 | MD conservation check.**
-`../figures/supplementary/02_md_stability_mace{,_prod,_ft}.*` + `../figures/supplementary/02_md_stability_mattersim_prod.*` —
+`../figures/supplementary/02_MD_stability_MACE{,_prod,_ft}.*` + `../figures/supplementary/02_MD_stability_MatterSim_prod.*` —
 *[method validation]*
 (**a**) instantaneous temperature, (**b**) potential energy per atom vs time; direct-labelled 600/800/
 1000 K traces, dashed = target T. Confirms stable NVT thermostatting, no drift/blow-up, for **both**
@@ -129,8 +129,8 @@ production-tier potentials (MACE and MatterSim, 416-atom/200 ps) as well as the 
 fine-tuned variants. Variants: baseline (52-atom, 50 ps, MACE), `_prod` (416-atom, 200 ps, MACE and
 MatterSim), `_ft` (416-atom, 200 ps, fine-tuned MACE; energies on the fine-tuned QE reference ≈ −269
 eV/atom). *Stats:* n=1 Langevin-NVT trajectory per T per potential (friction 0.01 fs⁻¹, 1 fs step, log
-every 50). *Source:* `../source_data/supplementary/02_md_stability_mace{,_prod,_ft}.csv`,
-`../source_data/supplementary/02_md_stability_mattersim_prod.csv`.
+every 50). *Source:* `../source_data/supplementary/02_MD_stability_MACE{,_prod,_ft}.csv`,
+`../source_data/supplementary/02_MD_stability_MatterSim_prod.csv`.
 
 **Fig. S2 | Baseline transport & sampling convergence.**
 `../figures/supplementary/03_transport_convergence.*` — *[baseline → convergence]*

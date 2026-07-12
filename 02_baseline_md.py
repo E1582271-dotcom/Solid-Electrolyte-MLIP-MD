@@ -70,7 +70,8 @@ def _plot_md(records, mlip, fig_dir, tag=""):
                          bbox=dict(facecolor="white", alpha=0.7, edgecolor="none", pad=0.5), zorder=5)
     for ax, ltr in zip(axes, "ab"):
         pstyle.add_panel_label(ax, ltr)
-    out = op.fig(fig_dir, f"02_md_stability_{mlip}{tag}.png")
+    pretty = {"mace": "MACE", "mattersim": "MatterSim"}   # proper-noun casing in file names
+    out = op.fig(fig_dir, f"02_MD_stability_{pretty.get(mlip, mlip)}{tag}.png")
     op.save_source_data(out, ["temperature_K", "mean_T_K", "std_T_K",
                                   "mean_E_per_atom_eV", "drift_meV_atom_ps"], rows)
     return pstyle.finalize_figure(fig, out)[0]
