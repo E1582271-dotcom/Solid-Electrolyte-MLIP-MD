@@ -30,7 +30,7 @@ one such row per tag / composition / lead (panels a, b, c, … row-major, row la
 | `main/06_compare_leads.png` | Fig. 5 | lead | `06_compare_leads.py` |
 | `supplementary/02_md_stability_<mlip><tag>.png` (×4) | Fig. S1 | all | `02_baseline_md.py` |
 | `supplementary/03_transport_convergence.png` | Fig. S2 | baseline, long | `03_analyze_transport.py --merge-tags ",_long" --merge-name convergence` |
-| `supplementary/03_transport_dope.png` | Fig. S3 | dope | `03_analyze_transport.py --merge-tags "_dope_cl100,…,_dope_cl175" --merge-name dope` |
+| `supplementary/03_transport_dope.png` | Fig. S3 | dope | `03_analyze_transport.py --merge-tags "_dope_cl100,…,_dope_cl175" --merge-name dope --merge-layout grid-bar` |
 | `supplementary/03_transport_leads.png` | Fig. S4 | lead | `03_analyze_transport.py --merge-tags "_lead_<key>,…" --merge-name leads` |
 | `supplementary/08_pipeline_overview.{png,svg}` | Fig. S5 | — | `08_pipeline_overview.py` |
 
@@ -145,10 +145,11 @@ statistics, not physics. *Stats:* as Fig. 2. *Source:*
 
 **Fig. S3 | Per-composition transport, Cl-excess series.**
 `../figures/supplementary/03_transport_dope.*` — *[Fig. 4 variants]*
-One row per Cl content — (**a,b**) Cl 1.00, (**c,d**) 1.25, (**e,f**) 1.50, (**g,h**) 1.75;
-left = the single-composition Arrhenius fit (log₁₀ σT vs 1000/T), right = its σ(300 K) bar —
-the fits underlying Fig. 4's trend (`--no-expt`: no per-composition experimental reference
-exists for the non-anchor compositions). *Stats:* as Fig. 2. *Source:*
+(**a–d**) The four single-composition Arrhenius fits (log₁₀ σT vs 1000/T) underlying Fig. 4's
+trend, one panel per Cl content (1.00 / 1.25 / 1.50 / 1.75); (**e**) all four σ(300 K) bars in
+one shared log axis — the ~29× monotonic rise reads directly (`--no-expt`: no per-composition
+experimental reference exists for the non-anchor compositions; colours match Fig. 4's
+composition ramp). *Stats:* as Fig. 2. *Source:*
 `../source_data/supplementary/03_transport_dope.csv`.
 
 **Fig. S4 | Per-lead transport, W11 funnel leads.**

@@ -216,6 +216,77 @@ def _plot_transport(groups, path):
     return ps.finalize_figure(fig, path, w_pad=2.5)[0]
 
 
+# same 4-step colour ramp as 07_doping_trend.py's DOPE_COLORS, so a series keeps its
+# colour identity across figures
+_SERIES_RAMP = [ps.PALETTE["blue_main"], ps.PALETTE["teal"],
+                ps.PALETTE["violet"], ps.PALETTE["red_strong"]]
+
+
+def _plot_transport_gridbar(groups, path):
+    """--merge-layout grid-bar: the per-group Arrhenius panels on a 2-column grid
+    (a, b, ...) plus ONE merged sigma(300 K) bar panel spanning the bottom row — one bar
+    per group in the same axis, so a monotonic series (e.g. Cl-excess doping) reads as a
+    single comparison instead of N isolated single-bar panels."""
+    n = len(groups)
+    ncols = 2
+    nrows_arr = (n + 1) // ncols
+    fig = plt.figure(figsize=(ps.COL_DOUBLE_IN, 2.9 * nrows_arr + 2.4))
+    gs = fig.add_gridspec(nrows_arr + 1, ncols,
+                          height_ratios=[1.0] * nrows_arr + [0.80])
+    letters = "abcdefghijklmnop"
+    for i, g in enumerate(groups):
+        ax = fig.add_subplot(gs[i // ncols, i % ncols])
+        _arrhenius_ax(ax, g["per_mlip"], g["fits"], expt_main=g["expt_main"])
+        ps.add_panel_label(ax, letters[i])
+        if g.get("row_label"):
+            ax.set_title(g["row_label"], loc="right", fontsize=ps.FS_ANNOT,
+                         color=ps.PALETTE["neutral_dark"], pad=3)
+    # merged sigma(300 K) bars: one bar per group (its fitted MLIP(s)), shared log axis
+    axB = fig.add_subplot(gs[nrows_arr, :])
+    labels, vals, colors, err_lo, err_hi = [], [], [], [], []
+    for i, g in enumerate(groups):
+        for m, fit in g["fits"].items():
+            if fit and np.isfinite(fit.get("sigma300_mS_cm", np.nan)):
+                lab = g.get("row_label") or MLIP_PRETTY.get(m, m)
+                if len(g["fits"]) > 1:      # disambiguate multi-MLIP groups
+                    lab += f"\n{MLIP_PRETTY.get(m, m)}"
+                labels.append(lab)
+                v = fit["sigma300_mS_cm"]
+                vals.append(v)
+                lo, hi = fit.get("sigma300_min_mS_cm"), fit.get("sigma300_max_mS_cm")
+                err_lo.append(v - lo if lo and np.isfinite(lo) else 0.0)
+                err_hi.append(hi - v if hi and np.isfinite(hi) else 0.0)
+                colors.append(_SERIES_RAMP[i % len(_SERIES_RAMP)])
+    x = np.arange(len(labels))
+    yerr = [err_lo, err_hi] if any(err_lo) or any(err_hi) else None
+    axB.bar(x, vals, color=colors, edgecolor="white", linewidth=0.5, width=0.62,
+            yerr=yerr, error_kw=dict(elinewidth=0.7, capsize=2, capthick=0.7,
+                                     ecolor=ps.PALETTE["neutral_black"]))
+    axB.set_yscale("log")
+    axB.set_xticks(x)
+    axB.set_xticklabels(labels, fontsize=ps.FS_TICK)
+    axB.set_ylabel("$\\sigma$(300 K)  (mS cm$^{-1}$, log)")
+    for xi, v in zip(x, vals):
+        axB.text(xi, v, _fmt_sigma(v), ha="center", va="bottom", fontsize=ps.FS_ANNOT)
+    ps.add_panel_label(axB, letters[n])
+    src_rows = []
+    for g in groups:
+        row_tag = g.get("row_label") or ""
+        for m, rows in g["per_mlip"].items():
+            f = g["fits"].get(m, {}) or {}
+            for r in rows:
+                src_rows.append([row_tag, m, r["T"], r["sigma_mS_cm"],
+                                 r.get("kinisi_sigma_std_mS_cm", ""),
+                                 f.get("Ea_eV", ""), f.get("Ea_err_eV", ""),
+                                 f.get("sigma300_mS_cm", ""), f.get("sigma300_min_mS_cm", ""),
+                                 f.get("sigma300_max_mS_cm", ""), f.get("R2", "")])
+    op.save_source_data(path, ["row", "mlip", "T_K", "sigma_mS_cm", "kinisi_sigma_std_mS_cm",
+                               "fit_Ea_eV", "fit_Ea_err_eV", "fit_sigma300_mS_cm",
+                               "fit_sigma300_min_mS_cm", "fit_sigma300_max_mS_cm", "fit_R2"],
+                        src_rows)
+    return ps.finalize_figure(fig, path, w_pad=2.5)[0]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data-dir", default=os.path.join(HERE, "data"))
@@ -245,6 +316,10 @@ def main():
     ap.add_argument("--merge-labels", default=None,
                     help="comma-separated per-row labels for --merge-tags (mathtext ok); "
                     "defaults to the tags themselves")
+    ap.add_argument("--merge-layout", default="rows", choices=["rows", "grid-bar"],
+                    help="rows: one row per tag (Arrhenius | sigma bars). grid-bar: "
+                    "Arrhenius panels on a 2-column grid + ONE merged sigma(300 K) bar "
+                    "panel with one bar per tag (for monotonic series like Cl-excess)")
     args = ap.parse_args()
     expt, expt_main = (None, None) if args.no_expt else (EXPT, EXPT_MAIN)
     ps.apply_publication_style()
@@ -279,8 +354,9 @@ def main():
             groups.append(dict(row_label=lab, per_mlip=per, fits=fits_g,
                                expt=expt_g, expt_main=expt_main_g))
         os.makedirs(args.fig_dir, exist_ok=True)
-        out = _plot_transport(groups, op.fig(args.fig_dir, f"03_transport_{args.merge_name}.png"))
-        print(f"[03] merged {len(groups)} tags -> {os.path.relpath(out, HERE)}")
+        plot = _plot_transport_gridbar if args.merge_layout == "grid-bar" else _plot_transport
+        out = plot(groups, op.fig(args.fig_dir, f"03_transport_{args.merge_name}.png"))
+        print(f"[03] merged {len(groups)} tags ({args.merge_layout}) -> {os.path.relpath(out, HERE)}")
         return
 
     existing_metrics = None
