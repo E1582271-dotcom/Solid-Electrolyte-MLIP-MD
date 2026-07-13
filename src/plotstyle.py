@@ -8,15 +8,15 @@ editable-text SVG export (svg.fonttype='none'). import-only; call apply_publicat
 once before creating figures.
 
 =============================================================================
-AI4SSB SHARED PLOTSTYLE -- CORE (byte-identical across all 3 portfolio repos)
+AI4SSB SHARED PLOTSTYLE -- CORE (byte-identical across all 4 portfolio repos)
 Canonical source: project2_mlip_md/src/plotstyle.py (this file)
 Also vendored (physical copy, not import -- each repo must stay independently
-cloneable/runnable) into project1_screening/src/plotstyle.py and
-project3_generative/src/plotstyle.py.
-CORE_VERSION = "1.0.0"          Last synced: 2026-07-05
-Everything from here down to "END CORE" must stay byte-identical in all three
+cloneable/runnable) into project1_screening/src/plotstyle.py,
+project3_generative/src/plotstyle.py and project4_interface/src/plotstyle.py.
+CORE_VERSION = "1.0.1"          Last synced: 2026-07-13
+Everything from here down to "END CORE" must stay byte-identical in all four
 copies. If you change any of it, bump CORE_VERSION + the sync date in THIS
-file and in the other two repos' copies, in the same sitting.
+file and in the other three repos' copies, in the same sitting.
 =============================================================================
 """
 from __future__ import annotations
@@ -132,8 +132,8 @@ def save_source_data(fig_path: str, columns, rows, subdir: str = "source_data"):
 
 # =============================================================================
 # END CORE -- everything below is this repo's own semantic palette layer.
-# Free to diverge from project1_screening / project3_generative; does not need
-# to match the other two repos.
+# Free to diverge from project1_screening / project3_generative /
+# project4_interface; does not need to match the other three repos.
 # =============================================================================
 
 # Temperature is a *sequential* physical variable -> cool->warm perceptual ramp.
