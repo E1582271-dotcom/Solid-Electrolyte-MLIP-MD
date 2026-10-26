@@ -1,0 +1,384 @@
+{
+ "batch": "census_12",
+ "stage": "census",
+ "protocol_section": "census",
+ "description": "seed-0 census, 12 compositions x 600/800/1000 K x 200 ps",
+ "reconstructed": true,
+ "note": "census runner (one trajectory per composition and temperature, seed 0); protocol values from the census manifest",
+ "protocol": {
+  "mlip": "MACE-MP-0 small, un-fine-tuned",
+  "model_sha256": "2ddb079cee0e131eaaf6912ba581b394551ead283e95c99cfe78c605d10b5736",
+  "md_code_sha256": "a773248ae302b8fec18c15cbf5caf78c3e7d21efc687c74ce94576eecc8aa0be",
+  "dtype": "float32",
+  "timestep_fs": 1.0,
+  "friction_ase_inverse_time": 0.01,
+  "log_every_steps": 50,
+  "equilibration_steps": 10000,
+  "seed_initialization": "np.random.seed(md_seed) before MaxwellBoltzmannDistribution and Langevin (census code/src/md.py, unchanged)",
+  "volume": "MP/PBE cell volume, no relaxation (census supercells, unchanged density)",
+  "ensemble": "NVT Langevin at the MP/PBE cell volume (no relaxation)",
+  "supercell_policy": "Diagonal integer replication of frozen raw cells; ceil(18 / each perpendicular cell height), unchanged density"
+ },
+ "tasks": [
+  {
+   "task_id": "p1r01_mp1097035/600K_seed0",
+   "candidate_key": "p1r01_mp1097035",
+   "p1_formula": "Li20Si3P3S23Cl",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "3ce9d508b381835c14d2942b6311f129b9fe504f5bc99f77719b67772d63220d"
+  },
+  {
+   "task_id": "p1r01_mp1097035/800K_seed0",
+   "candidate_key": "p1r01_mp1097035",
+   "p1_formula": "Li20Si3P3S23Cl",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "81f927fbb0ffe45f2fbc39fccbf99402522f14dac75019bda5932147c47b793a"
+  },
+  {
+   "task_id": "p1r01_mp1097035/1000K_seed0",
+   "candidate_key": "p1r01_mp1097035",
+   "p1_formula": "Li20Si3P3S23Cl",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "76afe3045c9280c248def2ff3f9aaacacaaf07558a4d3db6bc280ef513d31707"
+  },
+  {
+   "task_id": "p1r03_mp1040450/600K_seed0",
+   "candidate_key": "p1r03_mp1040450",
+   "p1_formula": "Li5P(S2Cl)2",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "1f407a5ee96a5dc7f3e3a57ca2b7d6cc96c9321949903f2f6b8cc5e6aa2e985a"
+  },
+  {
+   "task_id": "p1r03_mp1040450/800K_seed0",
+   "candidate_key": "p1r03_mp1040450",
+   "p1_formula": "Li5P(S2Cl)2",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "269bec6567aeaf22a73e9f02ef06f936a9c16d0294ef7391702e9c37d0501f47"
+  },
+  {
+   "task_id": "p1r03_mp1040450/1000K_seed0",
+   "candidate_key": "p1r03_mp1040450",
+   "p1_formula": "Li5P(S2Cl)2",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "4c586c0d3068c081684c331ddf6f4bab4873b02e269196bc65b866e086f49109"
+  },
+  {
+   "task_id": "p1r04_mp8452/600K_seed0",
+   "candidate_key": "p1r04_mp8452",
+   "p1_formula": "NaLiS",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "22b258c4bc72a6842036e9f6a0def2bc56ea1aaa5b3d304c75e73c405ced998a"
+  },
+  {
+   "task_id": "p1r04_mp8452/800K_seed0",
+   "candidate_key": "p1r04_mp8452",
+   "p1_formula": "NaLiS",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "ba709a9180bb6e2899ffd09a2e2dace263df9745e6f717b9bf3b83309891346e"
+  },
+  {
+   "task_id": "p1r04_mp8452/1000K_seed0",
+   "candidate_key": "p1r04_mp8452",
+   "p1_formula": "NaLiS",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "43867d6ddffde86ac06d3daf211328c01614fb986ed576c6a7ba82cecbe15e32"
+  },
+  {
+   "task_id": "p1r05_mp1001069/600K_seed0",
+   "candidate_key": "p1r05_mp1001069",
+   "p1_formula": "Li48P16S61",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "c17ea7472ed28495d4e4d5dd1198189d1469e8046cb70c4585a2cb5f34dfb9f3"
+  },
+  {
+   "task_id": "p1r05_mp1001069/800K_seed0",
+   "candidate_key": "p1r05_mp1001069",
+   "p1_formula": "Li48P16S61",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "c577d2f71bd6f26721ef9325ed220b67c23a221474a56791426aba4003dfcba9"
+  },
+  {
+   "task_id": "p1r05_mp1001069/1000K_seed0",
+   "candidate_key": "p1r05_mp1001069",
+   "p1_formula": "Li48P16S61",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "ef03b17e7f837b742e0938bedad10f8ec46562338cea062e6990baaeec9e7ff2"
+  },
+  {
+   "task_id": "p1r06_mp1211324/600K_seed0",
+   "candidate_key": "p1r06_mp1211324",
+   "p1_formula": "Li7PS6",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "fad7023570810bd5dab8f1241eba4fbc33d8e39d69c8ac9938342c72790ec1e1"
+  },
+  {
+   "task_id": "p1r06_mp1211324/800K_seed0",
+   "candidate_key": "p1r06_mp1211324",
+   "p1_formula": "Li7PS6",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "892ba9b0635ceffac781bc82c00eb188616ba72e6c4908148ba1ea6f69caa8bf"
+  },
+  {
+   "task_id": "p1r06_mp1211324/1000K_seed0",
+   "candidate_key": "p1r06_mp1211324",
+   "p1_formula": "Li7PS6",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "5371d5593fd8d0ae8102dc8d7dfb901d17654c317912ca35dba72f9777f7edf1"
+  },
+  {
+   "task_id": "p1r08_mp755139/600K_seed0",
+   "candidate_key": "p1r08_mp755139",
+   "p1_formula": "Li5BiS4",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "4699b7f83623f9f34458c030bf1386a0e55ed505189ec5cd0bd99a880e1039f7"
+  },
+  {
+   "task_id": "p1r08_mp755139/800K_seed0",
+   "candidate_key": "p1r08_mp755139",
+   "p1_formula": "Li5BiS4",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "82621c6f2b6548ef104270365304f3db16aa9e7b7ac5497cca5ef6e5690d2a8f"
+  },
+  {
+   "task_id": "p1r08_mp755139/1000K_seed0",
+   "candidate_key": "p1r08_mp755139",
+   "p1_formula": "Li5BiS4",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "c71c3e1f9db285ba3be104b2694d312a8b895dce055b9026e964248ea36ed1f7"
+  },
+  {
+   "task_id": "p1r09_mp754856/600K_seed0",
+   "candidate_key": "p1r09_mp754856",
+   "p1_formula": "Li7Y7ZrS16",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "703c17a94bcd54ed8ba50fc478a29d092f1d0c9631af350f4ab519f4dd72d097"
+  },
+  {
+   "task_id": "p1r09_mp754856/800K_seed0",
+   "candidate_key": "p1r09_mp754856",
+   "p1_formula": "Li7Y7ZrS16",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "cb589c93d909665a5a1b5f1497285ec9e4231a48b3af931e2d7cdde428a0ecb9"
+  },
+  {
+   "task_id": "p1r09_mp754856/1000K_seed0",
+   "candidate_key": "p1r09_mp754856",
+   "p1_formula": "Li7Y7ZrS16",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "be4d7d9dad140a1c807fb0509ea08cd6faad886a92f46f74a561f3923f2739c6"
+  },
+  {
+   "task_id": "p1r10_mp1222482/600K_seed0",
+   "candidate_key": "p1r10_mp1222482",
+   "p1_formula": "Li6AsS5I",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "a236d7b4d046608e93f8dab43a9fa8102e8a6e5dd6bf98461aedbd995a421a19"
+  },
+  {
+   "task_id": "p1r10_mp1222482/800K_seed0",
+   "candidate_key": "p1r10_mp1222482",
+   "p1_formula": "Li6AsS5I",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "7b6e24a8164659191e208cac5eebcd5904960c7b49907157dedfb9eb57b6562d"
+  },
+  {
+   "task_id": "p1r10_mp1222482/1000K_seed0",
+   "candidate_key": "p1r10_mp1222482",
+   "p1_formula": "Li6AsS5I",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "177cd319c76dcfe23218c52d469ffded0a19051471438f40b211609d593d5642"
+  },
+  {
+   "task_id": "p1r11_mp1188784/600K_seed0",
+   "candidate_key": "p1r11_mp1188784",
+   "p1_formula": "Li2CdSnS4",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "0b6701b54e61c16d552f04eecdbfd8ffd7273d4f7d3ec111fd27922f7092f335"
+  },
+  {
+   "task_id": "p1r11_mp1188784/800K_seed0",
+   "candidate_key": "p1r11_mp1188784",
+   "p1_formula": "Li2CdSnS4",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "093d8f0ab6b2cc5e792bf7f5ee77224377a8e7553f6cee435974dfa53f09f7da"
+  },
+  {
+   "task_id": "p1r11_mp1188784/1000K_seed0",
+   "candidate_key": "p1r11_mp1188784",
+   "p1_formula": "Li2CdSnS4",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "c1792e4a066554d0dbe0f8453e3d1007447bc6af24c3d21896707986bcf61ec4"
+  },
+  {
+   "task_id": "p1r12_mp1021497/600K_seed0",
+   "candidate_key": "p1r12_mp1021497",
+   "p1_formula": "Li2SiSnS4",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "1bb96d872bff193a0b1f25313db8da122039d729611d83c12b57eefdda99a41e"
+  },
+  {
+   "task_id": "p1r12_mp1021497/800K_seed0",
+   "candidate_key": "p1r12_mp1021497",
+   "p1_formula": "Li2SiSnS4",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "491eea82899c62c4b31d8426fd0b78efbfadd2d7f28805643144adb0f7914ab5"
+  },
+  {
+   "task_id": "p1r12_mp1021497/1000K_seed0",
+   "candidate_key": "p1r12_mp1021497",
+   "p1_formula": "Li2SiSnS4",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "45e8b04f86149ce0b06336ca23eaa38e3dc1718389e9d55100022cbb2464e9a2"
+  },
+  {
+   "task_id": "p1r14_mp1188392/600K_seed0",
+   "candidate_key": "p1r14_mp1188392",
+   "p1_formula": "LiInS2",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "10dd500b32972898ffdc2c7417aced507a639680d799ee759a5eb18559aa04f4"
+  },
+  {
+   "task_id": "p1r14_mp1188392/800K_seed0",
+   "candidate_key": "p1r14_mp1188392",
+   "p1_formula": "LiInS2",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "72fd229701f42c87eb21326f51e665e88b0d1a26845c4f0223911505af0ea582"
+  },
+  {
+   "task_id": "p1r14_mp1188392/1000K_seed0",
+   "candidate_key": "p1r14_mp1188392",
+   "p1_formula": "LiInS2",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "5167ccb6ed670ffe2258f4212a567b136a921a622e62375cc8902d317174e4f5"
+  },
+  {
+   "task_id": "p1r15_mp555186/600K_seed0",
+   "candidate_key": "p1r15_mp555186",
+   "p1_formula": "Li2ZnSnS4",
+   "temperature_K": 600,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "98ef3a024a2a1774340d418becc43a86aee26e45a7690d0060c7641829461faf"
+  },
+  {
+   "task_id": "p1r15_mp555186/800K_seed0",
+   "candidate_key": "p1r15_mp555186",
+   "p1_formula": "Li2ZnSnS4",
+   "temperature_K": 800,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "526c9fe1f703ea22ec1192e1eedc889690a254452d5ea396d15dc1d20179d801"
+  },
+  {
+   "task_id": "p1r15_mp555186/1000K_seed0",
+   "candidate_key": "p1r15_mp555186",
+   "p1_formula": "Li2ZnSnS4",
+   "temperature_K": 1000,
+   "md_seed": 0,
+   "production_steps": 200000,
+   "equilibration_steps": 10000,
+   "trajectory_sha256": "1600bf1b441ef853b1ad27f45b4cd56e6a2b7031ba2432c3b4476680aa196599"
+  }
+ ]
+}

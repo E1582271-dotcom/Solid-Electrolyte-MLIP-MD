@@ -1,0 +1,24 @@
+#!/bin/bash
+# One task per job (or per array subjob) on one GPU; same task.sh/claims as pool.pbs.
+# Each GPU queue runs ONE job per user, so array subjobs run one at a time;
+# use pool.pbs for concurrency and this script for single reruns.
+#   one task:  qsub -P $PROJECT -v TASK_INDEX=7 run.pbs
+#   array:     qsub -P $PROJECT -J 6-7 run.pbs
+#   rerun a failed task: inspect results/, then rm -r claims/task_map/<i> and resubmit
+#   CPU analysis (no GPU; walltime > 2 h routes to the CPU queue q2):
+#     qsub -P $PROJECT -l select=1:ncpus=16:mem=160gb -l walltime=03:00:00 -v TASK_MAP=analysis_task_map.json,TASK_INDEX=0 run.pbs
+# Walltime 10.5 h: longest task (Li5SbS3I2 600 K, 800 ps) 7.7 h estimated, x1.25 + 20 min.
+#PBS -N P2def_task
+#PBS -q normal
+#PBS -l select=1:ncpus=16:mem=110gb:ngpus=1
+#PBS -l walltime=10:30:00
+#PBS -j oe
+#PBS -r y
+set -uo pipefail
+cd "$PBS_O_WORKDIR"
+export RUN_ID="$(date +%s)-$$"
+mkdir -p logs
+IDX=${PBS_ARRAY_INDEX:-${TASK_INDEX:?Set TASK_INDEX or submit as an array}}
+bash "$PWD/task.sh" "$IDX"; rc=$?
+(( rc == 3 )) && exit 0   # claimed elsewhere
+exit $rc

@@ -1,0 +1,82 @@
+#!/bin/bash
+# Multi-node GPU pool for queue g4 (>= 5 GPUs, so two whole 4-GPU nodes; g4 also
+# needs walltime > 2 h). Same tasks, claims and task.sh as the single-node pool.pbs.
+#   qsub -P $PROJECT -l select=2:ncpus=64:mem=440gb:ngpus=4 -l place=scatter pool_multinode.pbs
+#   smoke: add -l walltime=02:05:00 -v TASK_MAP=smoke_g4_task_map.json
+# Lessons from the V3-V6 failures: no pbsdsh (PBS_VNODENUM is not set), nothing on
+# a secondary node relies on PBS_* variables (one node once lacked PBS_NODEFILE),
+# and there is no cross-node barrier. The head reads the host list here, then
+# launches node_pool.sh once per node with Cray PALS mpiexec (ssh as fallback,
+# chosen by a hostname probe), passing everything as arguments. Each node runs one
+# worker per local GPU and claims tasks independently. The job waits for both
+# nodes and exits non-zero if a node did not report, found no GPUs or had a
+# failed worker.
+#PBS -N P2def_mpool
+#PBS -q normal
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -r y
+set -uo pipefail
+cd "$PBS_O_WORKDIR"
+TASK_MAP=${TASK_MAP:-task_map.json}; export TASK_MAP
+RUN_ID="$(date +%s)-$$"
+T0=$(date +%s)
+WALL=$(qstat -f "$PBS_JOBID" 2>/dev/null | awk -F' = ' '/Resource_List.walltime/{print $2; exit}')
+if [[ "$WALL" =~ ^([0-9]+):([0-9]{2}):([0-9]{2})$ ]]; then
+  WALL_S=$(( 10#${BASH_REMATCH[1]}*3600 + 10#${BASH_REMATCH[2]}*60 + 10#${BASH_REMATCH[3]} ))
+else
+  WALL_S=$(( 24*3600 )); echo "warning: walltime not readable from qstat; assuming 24 h"
+fi
+END=$(( T0 + WALL_S - 120 ))
+HOSTS=()
+while read -r h; do [[ -n "$h" ]] && HOSTS+=("${h%%.*}"); done < <(sort -u "${PBS_NODEFILE:?head node has no PBS_NODEFILE}")
+N=${#HOSTS[@]}
+HOSTS_CSV=$(IFS=,; echo "${HOSTS[*]}")
+WANT=$(printf '%s\n' "${HOSTS[@]}" | sort -u | paste -sd, -)
+MPIEXEC=/opt/cray/pe/pals/1.1.6/bin/mpiexec; [[ -x "$MPIEXEC" ]] || MPIEXEC=$(command -v mpiexec || true)
+probe_mpiexec() {
+  [[ -n "$MPIEXEC" ]] || return 1
+  [[ "$(timeout 120 "$MPIEXEC" -n "$N" --ppn 1 --cpu-bind none hostname -s 2>/dev/null | sort -u | paste -sd, -)" == "$WANT" ]]
+}
+probe_ssh() {
+  local h
+  for h in "${HOSTS[@]}"; do
+    [[ "$(timeout 60 ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 "$h" hostname -s 2>/dev/null)" == "$h" ]] || return 1
+  done
+}
+LAUNCHER=${LAUNCHER:-auto}
+if [[ "$LAUNCHER" == auto ]]; then
+  if probe_mpiexec; then LAUNCHER=mpiexec
+  elif probe_ssh; then LAUNCHER=ssh
+  else echo "error: neither mpiexec nor ssh reaches all of $HOSTS_CSV"; exit 2
+  fi
+fi
+echo "mpool job=$PBS_JOBID hosts=$HOSTS_CSV launcher=$LAUNCHER map=$TASK_MAP walltime_s=$WALL_S run=$RUN_ID"
+ARGS=("$PWD" "$TASK_MAP" "$PBS_JOBID" "$RUN_ID" "$END" "$HOSTS_CSV")
+mkdir -p logs node_status
+case "$LAUNCHER" in
+  mpiexec)
+    "$MPIEXEC" -n "$N" --ppn 1 --cpu-bind none /bin/bash "$PWD/node_pool.sh" "${ARGS[@]}"
+    echo "mpiexec rc=$?"
+    ;;
+  ssh)
+    for h in "${HOSTS[@]}"; do
+      ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$h" /bin/bash "$PWD/node_pool.sh" "${ARGS[@]}" &
+    done
+    wait
+    ;;
+  *) echo "error: unknown launcher $LAUNCHER"; exit 2 ;;
+esac
+RC=0; ALL=()
+for h in "${HOSTS[@]}"; do
+  f="node_status/${TASK_MAP%.json}_${PBS_JOBID%%.*}_node"*"_${h}.txt"
+  f=$(ls $f 2>/dev/null | head -1)
+  if [[ -z "$f" ]]; then echo "node $h: no status file"; RC=1; continue; fi
+  cat "$f"
+  [[ "$(cat "$f")" == *" rc=0 "* ]] || RC=1
+  g=$(sed -n 's/.* gpus=\([^ ]*\) .*/\1/p' "$f")
+  ALL+=(${g//,/ })
+done
+echo "nodes=$N distinct_gpus=$(printf '%s\n' "${ALL[@]:-}" | grep -c '^GPU-' ) unique=$(printf '%s\n' "${ALL[@]:-}" | grep '^GPU-' | sort -u | wc -l)"
+python3 -B run_one.py --summary
+exit $RC

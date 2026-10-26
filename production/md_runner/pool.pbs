@@ -1,0 +1,78 @@
+#!/bin/bash
+# Single-node GPU pool (V7 pattern, generalised). Every GPU queue caps a user at
+# ONE running job (g1 = 1 GPU, g2 = 2-3, g3 = 4), so concurrency comes from one
+# pool per band. The project goes on the command line (-P $PROJECT):
+#   qsub -P $PROJECT -l select=1:ncpus=64:mem=440gb:ngpus=4 pool.pbs   # -> g3
+#   qsub -P $PROJECT -l select=1:ncpus=48:mem=330gb:ngpus=3 pool.pbs   # -> g2
+#   qsub -P $PROJECT -l select=1:ncpus=16:mem=110gb:ngpus=1 pool.pbs   # -> g1
+#   smoke (walltime <= 2 h routes to gdev):
+#   qsub -P $PROJECT -l select=1:ncpus=32:mem=220gb:ngpus=2 -l walltime=01:00:00 -v SMOKE=1 pool.pbs
+# One worker per allocated GPU, all on this node (no pbsdsh). A worker claims
+# the longest unclaimed task (task map est_wall_h) that still fits:
+#   est_wall_h * SAFETY_PCT/100 + MIN_LEFT_S < walltime left
+# (V7 used a single MIN_LEFT_S = longest task; tasks here range 1.7-7.7 h, so
+# each task's own estimate is used and short tasks can backfill). A worker stops
+# after its first real failure, or when no remaining task fits.
+# Workers take only tasks with "where": "gpu_pool". Tasks with "where":
+# "after_pool" (e.g. the smoke analysis pass) run once, in index order, after all
+# workers have finished; "cpu_job" tasks are never run here (use run.pbs).
+#PBS -N P2def_pool
+#PBS -q normal
+#PBS -l walltime=20:00:00
+#PBS -j oe
+#PBS -r y
+set -uo pipefail
+cd "$PBS_O_WORKDIR"
+TASK_MAP=${TASK_MAP:-task_map.json}; [[ "${SMOKE:-0}" == 1 ]] && TASK_MAP=smoke_task_map.json
+CLAIMS="claims/${TASK_MAP%.json}"
+export TASK_MAP RUN_ID="$(date +%s)-$$"
+T0=$(date +%s)
+SAFETY_PCT=125   # tolerate tasks 25 % slower than estimated
+MIN_LEFT_S=1200  # runtime sha checks + tar + model load + raw QC + margin
+WALL=$(qstat -f "$PBS_JOBID" 2>/dev/null | awk -F' = ' '/Resource_List.walltime/{print $2; exit}')
+if [[ "$WALL" =~ ^([0-9]+):([0-9]{2}):([0-9]{2})$ ]]; then
+  WALL_S=$(( 10#${BASH_REMATCH[1]}*3600 + 10#${BASH_REMATCH[2]}*60 + 10#${BASH_REMATCH[3]} ))
+else
+  WALL_S=$(( 20*3600 )); echo "warning: walltime not readable from qstat; assuming 20 h"
+fi
+END=$(( T0 + WALL_S - 60 ))
+ORDER=(); EST=(); AFTER=()
+while read -r i s w; do
+  case "$w" in gpu_pool) ORDER+=("$i"); EST+=("$s") ;; after_pool) AFTER+=("$i") ;; esac
+done < <(python3 -c 'import json,sys; t=json.load(open(sys.argv[1])); [print(x["index"], int(round(x["est_wall_h"]*3600)), x.get("where", "gpu_pool")) for x in sorted(t, key=lambda x: (-x["est_wall_h"], x["index"]))]' "$TASK_MAP")
+echo "pool host=$(hostname -s) job=$PBS_JOBID map=$TASK_MAP walltime_s=$WALL_S order=${ORDER[*]} after_pool=${AFTER[*]:-} gpus=${CUDA_VISIBLE_DEVICES:?No GPUs allocated}"
+
+worker() {
+  local gpu=$1 k i next rc left pending oj orun
+  while :; do
+    next=""; pending=0; left=$(( END - $(date +%s) ))
+    for k in "${!ORDER[@]}"; do
+      i=${ORDER[$k]}
+      [[ -e "$CLAIMS/$i/done" ]] && continue
+      if [[ -e "$CLAIMS/$i" ]]; then
+        # Only a claim left by an earlier run of this same job (PBS rerun) is retaken.
+        oj=""; orun=""
+        read -r oj _ orun _ 2>/dev/null < "$CLAIMS/$i/owner"
+        [[ "$oj" == "$PBS_JOBID" && -n "$orun" && "$orun" != "$RUN_ID" ]] || continue
+      fi
+      pending=1
+      (( left > EST[k]*SAFETY_PCT/100 + MIN_LEFT_S )) || continue
+      next=$i; break
+    done
+    if [[ -z "$next" ]]; then
+      (( pending )) && echo "[$gpu] stop: remaining tasks do not fit the walltime left (${left}s)" || echo "[$gpu] stop: no unclaimed tasks"
+      return
+    fi
+    CUDA_VISIBLE_DEVICES=$gpu bash "$PWD/task.sh" "$next" > "logs/${TASK_MAP%.json}_${PBS_JOBID%%.*}_task${next}.log" 2>&1; rc=$?
+    echo "[$gpu] $(date -u +%FT%TZ) task $next rc=$rc"
+    (( rc == 0 || rc == 3 )) || { echo "[$gpu] stop: task $next failed"; return; }
+  done
+}
+mkdir -p logs "$CLAIMS"
+for gpu in ${CUDA_VISIBLE_DEVICES//,/ }; do worker "$gpu" & sleep 5; done
+wait
+for i in $(printf '%s\n' "${AFTER[@]:-}" | sort -n); do
+  bash "$PWD/task.sh" "$i" > "logs/${TASK_MAP%.json}_${PBS_JOBID%%.*}_task${i}.log" 2>&1; rc=$?
+  echo "[after_pool] $(date -u +%FT%TZ) task $i rc=$rc"
+done
+python3 -B run_one.py --summary
