@@ -1,0 +1,220 @@
+{
+  "protocol": "docs/CLASSIFICATION_PROTOCOL.md",
+  "protocol_sha256": "414d0fb8dd9f3c66660374db01cc36f1278d60f3e2abb078c87fbcacece3d9df",
+  "stage": "post-compute",
+  "n_compositions": 62,
+  "class_counts": {
+    "FAST_VALIDATED": 11,
+    "SLOW_MEASURED": 2,
+    "SLOW_ESTIMATED": 6,
+    "SLOW_BOUNDED": 43,
+    "THERMALLY_UNSTABLE": 0,
+    "NEEDS_COMPUTE": 0
+  },
+  "needs_compute": [],
+  "preregistered_compute_list": [
+    "Li20Si3P3S23Cl",
+    "Li5P(S2Cl)2",
+    "Li10Zn7(PS4)8",
+    "Li3NbS4",
+    "Li5BiS4",
+    "Li48P16S61",
+    "Li9Nd2(PS4)5",
+    "Li6AsS5I"
+  ],
+  "needs_compute_matches_preregistered": false,
+  "deviations_from_preregistered": {
+    "unexpected_needs_compute": [],
+    "preregistered_but_decided": [
+      "Li10Zn7(PS4)8",
+      "Li20Si3P3S23Cl",
+      "Li3NbS4",
+      "Li48P16S61",
+      "Li5BiS4",
+      "Li5P(S2Cl)2",
+      "Li6AsS5I",
+      "Li9Nd2(PS4)5"
+    ]
+  },
+  "fast_validated": [
+    "Li20Si3P3S23Cl",
+    "Li5P(S2Cl)2",
+    "Li48P16S61",
+    "Li7PS6",
+    "Li6AsS5I",
+    "Li9Nd2(PS4)5",
+    "Li10Zn7(PS4)8",
+    "Li4Re6S11",
+    "Li4TiS4",
+    "Li3NbS4",
+    "Li5B7S13"
+  ],
+  "fitted_D0_cm2_s": {
+    "scope": "compositions with >= 2 eligible temperatures (pooled ln D vs 1/T fit over eligible runs)",
+    "n": 19,
+    "min": 0.00012314809512980026,
+    "min_formula": "Li6AsS5I",
+    "median": 0.005224752896378432,
+    "max": 0.03736460493122486,
+    "below_D0_min": [],
+    "below_D0_min_sensitivity": [],
+    "by_composition": {
+      "Li6AsS5I": 0.00012314809512980026,
+      "Li4Re6S11": 0.00020697196160543687,
+      "Li7PS6": 0.00041582339604445364,
+      "Li5B7S13": 0.0004597225015262527,
+      "Li20Si3P3S23Cl": 0.0004726238065823456,
+      "Li10Zn7(PS4)8": 0.0006177029988394361,
+      "Li9Nd2(PS4)5": 0.0021237933305104212,
+      "Li4TiS4": 0.0026849229972149935,
+      "Li3BiS3": 0.003097901674444691,
+      "Li48P16S61": 0.005224752896378432,
+      "Li9S3N": 0.005672286674890496,
+      "Li2Ga2GeS6": 0.007674063667378807,
+      "Li8TiS6": 0.00938390752509727,
+      "Li3NbS4": 0.019598332796520408,
+      "Li2B2S5": 0.020037669855330217,
+      "Li5SbS3I2": 0.02188375053036558,
+      "Li3BS3": 0.02318918364733645,
+      "Li5P(S2Cl)2": 0.035070064217337465,
+      "LiAl(PS3)2": 0.03736460493122486
+    }
+  },
+  "sensitivity_D0min_1e-5": {
+    "n_slow_bounded": 43,
+    "binding_bound_kind_counts": {
+      "prefactor": 36,
+      "pair": 7
+    },
+    "max_slow_bounded_sigma300_upper_bound_mS_cm": 0.08247471346356126,
+    "max_slow_bounded_sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744738502325,
+    "n_unchanged": 42,
+    "verdict_changes": [
+      {
+        "formula": "Li2SiSnS4",
+        "class_at_1e-5": "NEEDS_COMPUTE",
+        "sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744738502325
+      }
+    ]
+  },
+  "kinisi_failure_rule": {
+    "rule": "amendment A3.2: an eligible run with kinisi D / direct-MSD D outside 1/3-3 is treated as not resolved",
+    "excluded_runs": {
+      "Li5P(S2Cl)2": [
+        "450K_seed3"
+      ],
+      "Rb2LiTaS4": [
+        "1000K_seed0"
+      ],
+      "Li7Y7ZrS16": [
+        "1000K_seed0"
+      ],
+      "Li6AsS5I": [
+        "700K_seed3"
+      ],
+      "Li2CdGeS4": [
+        "1000K_seed0"
+      ],
+      "Li2GePbS4": [
+        "800K_seed0"
+      ],
+      "Li10Zn7(PS4)8": [
+        "450K_seed1",
+        "525K_seed4"
+      ],
+      "Cs2LiNbS4": [
+        "1000K_seed0"
+      ]
+    },
+    "class_changes": [
+      {
+        "formula": "Li5P(S2Cl)2",
+        "class": "FAST_VALIDATED",
+        "class_without_rule": "SLOW_MEASURED"
+      },
+      {
+        "formula": "Li2GePbS4",
+        "class": "SLOW_BOUNDED",
+        "class_without_rule": "SLOW_ESTIMATED"
+      },
+      {
+        "formula": "Li10Zn7(PS4)8",
+        "class": "FAST_VALIDATED",
+        "class_without_rule": "SLOW_MEASURED"
+      }
+    ]
+  },
+  "flagged": {
+    "Li9S3N": [
+      "lower_T_unresolved_estimate_is_upper_value"
+    ],
+    "Li5P(S2Cl)2": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Rb2LiTaS4": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Li7Y7ZrS16": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Li6AsS5I": [
+      "kinisi_fit_failed_runs_excluded",
+      "near_threshold"
+    ],
+    "Li2SiSnS4": [
+      "verdict_changes_at_D0min_1e-5"
+    ],
+    "Li2CdGeS4": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Li2GePbS4": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Li10Zn7(PS4)8": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Cs2LiNbS4": [
+      "kinisi_fit_failed_runs_excluded"
+    ],
+    "Li2Ga2GeS6": [
+      "lower_T_unresolved_estimate_is_upper_value"
+    ],
+    "Li8TiS6": [
+      "lower_T_unresolved_estimate_is_upper_value"
+    ],
+    "Li3BiS3": [
+      "near_threshold"
+    ],
+    "LiAl(PS3)2": [
+      "lower_T_unresolved_estimate_is_upper_value"
+    ],
+    "Li3BS3": [
+      "lower_T_unresolved_estimate_is_upper_value"
+    ]
+  },
+  "parameters": {
+    "fast_threshold_mS_cm": 0.1,
+    "T_ref_K": 300.0,
+    "D0_min_cm2_s": 0.0001,
+    "D0_min_sensitivity_cm2_s": 1e-05,
+    "T_bias_max": 0.05,
+    "framework_msd_100ps_max_A2": 1.0,
+    "framework_fraction_gt2A_max": 0.1,
+    "bound_lag_ps": 100.0,
+    "unstable_lowest_T_K": 400.0
+  },
+  "inputs": [
+    {
+      "path": "data/runs.csv",
+      "sha256": "4a346c1d72fb81813ce3adf5f24356cb611389012dd6bf3405d07c66f6bcd11a"
+    },
+    {
+      "path": "data/compositions.csv",
+      "sha256": "0a2076d0d53dc2ddbabd65509883a29aaafd673fea238d7280866e5faf06afa8"
+    },
+    {
+      "path": "data/replicates/lead_decisions.csv",
+      "sha256": "d4be256f0023549fcac0ee0ef5e53484a0a697e2546d88c8d0246c96a851db8d"
+    }
+  ]
+}

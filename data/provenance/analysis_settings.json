@@ -1,0 +1,80 @@
+{
+ "def_b1": {
+  "code_sha256": {
+   "analyze_campaign.py": "83a67850e05d469bbfe2444a6b0296f8b0956d9bbea2b4e34cb26cabd4d0544d",
+   "transport_generic.py": "a229674f7fc13219893cfd3e7d0c241ecf12256d5af5c222d173980f63a71de6"
+  },
+  "config_sha256": "3d5fa7290dbedae34f7322d2ea993d82efbcb30550938e80be526202d223ac60",
+  "environment": {
+   "implementation": "CPython",
+   "machine": "x86_64",
+   "packages": {
+    "ase": "3.29.0",
+    "emcee": "3.1.6",
+    "kinisi": "2.0.5",
+    "matplotlib": "3.11.0",
+    "numpy": "2.4.6",
+    "pymatgen": "2026.5.4",
+    "pymatgen-analysis-diffusion": "2025.11.15",
+    "scipp": "26.3.1",
+    "scipy": "1.17.1"
+   },
+   "python": "3.11.15",
+   "system": "Linux"
+  },
+  "errors": [],
+  "runs_analysed": 29
+ },
+ "def_b2": {
+  "code_sha256": {
+   "analyze_campaign.py": "83a67850e05d469bbfe2444a6b0296f8b0956d9bbea2b4e34cb26cabd4d0544d",
+   "transport_generic.py": "a229674f7fc13219893cfd3e7d0c241ecf12256d5af5c222d173980f63a71de6"
+  },
+  "config_sha256": "3d5fa7290dbedae34f7322d2ea993d82efbcb30550938e80be526202d223ac60",
+  "environment": {
+   "implementation": "CPython",
+   "machine": "x86_64",
+   "packages": {
+    "ase": "3.29.0",
+    "emcee": "3.1.6",
+    "kinisi": "2.0.5",
+    "matplotlib": "3.11.0",
+    "numpy": "2.4.6",
+    "pymatgen": "2026.5.4",
+    "pymatgen-analysis-diffusion": "2025.11.15",
+    "scipp": "26.3.1",
+    "scipy": "1.17.1"
+   },
+   "python": "3.11.15",
+   "system": "Linux"
+  },
+  "errors": [],
+  "runs_analysed": 45
+ },
+ "def_b3": {
+  "code_sha256": {
+   "analyze_campaign.py": "83a67850e05d469bbfe2444a6b0296f8b0956d9bbea2b4e34cb26cabd4d0544d",
+   "transport_generic.py": "a229674f7fc13219893cfd3e7d0c241ecf12256d5af5c222d173980f63a71de6"
+  },
+  "config_sha256": "3d5fa7290dbedae34f7322d2ea993d82efbcb30550938e80be526202d223ac60",
+  "environment": {
+   "implementation": "CPython",
+   "machine": "x86_64",
+   "packages": {
+    "ase": "3.29.0",
+    "emcee": "3.1.6",
+    "kinisi": "2.0.5",
+    "matplotlib": "3.11.0",
+    "numpy": "2.4.6",
+    "pymatgen": "2026.5.4",
+    "pymatgen-analysis-diffusion": "2025.11.15",
+    "scipp": "26.3.1",
+    "scipy": "1.17.1"
+   },
+   "python": "3.11.15",
+   "system": "Linux"
+  },
+  "errors": [],
+  "runs_analysed": 24
+ }
+}

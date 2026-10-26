@@ -1,0 +1,13 @@
+stage,count,unit,detail
+experimental_records,599,OBELiX records,478 official train + 121 held-out test
+mp_li_entries,21712,MP entries,all Li-containing Materials Project entries (database 2026.04.13)
+mp_funnel,248,MP entries,"S, no H, 3-5 elements, E_hull <= 0.05 eV/atom, band gap >= 1.5 eV"
+candidate_structures,79,MP entries,P1 screening candidates before grouping by composition
+queue,62,compositions,frozen P1 queue; one representative MP structure simulated per composition
+census,186,trajectories,"62 compositions x 600/800/1000 K x 200 ps, MD seed 0"
+census_leads,6,compositions,census screen labels 'conditional' or 'review'
+replicates,36,trajectories,MD seeds 1 and 2 of the 6 leads at 600/800/1000 K
+definitive,98,trajectories,"batches 1/2/3: 29/45/24; 400-1000 K, 200-800 ps, MD seeds 0-4"
+classified,62,compositions,FAST_VALIDATED 11; SLOW_MEASURED 2; SLOW_ESTIMATED 6; SLOW_BOUNDED 43
+fast_conductors,11,compositions,FAST_VALIDATED: sigma(300 K) >= 0.1 mS/cm with replicate seeds
+unique_trajectories,320,trajectories,"census + replicates + definitive campaigns (MACE-MP-0 small, NVT)"
