@@ -39,7 +39,7 @@ Brackets: pooled 95 % interval of multi-seed fits. † fast only with the failed
 
 ## Limits
 
-- One un-fine-tuned universal potential at the Materials Project volume, one representative structure per composition, one supercell size. On Li<sub>6</sub>PS<sub>5</sub>Cl the same protocol overpredicts σ(300 K) about 1.8×, while MatterSim on the same cell gives 0.11× (companion repository Li6PS5Cl-MLIP-Finetune). Absolute σ therefore depends on the potential, and how the bias varies between compositions has not been measured. These are model predictions, not measurements.
+- One un-fine-tuned universal potential at the Materials Project volume, one representative structure per composition, one supercell size. On Li<sub>6</sub>PS<sub>5</sub>Cl the same protocol overpredicts σ(300 K) about 1.8×, while MatterSim on the same cell gives 0.11× (companion repository MLIP-fine-tune). Absolute σ therefore depends on the potential, and how the bias varies between compositions has not been measured. These are model predictions, not measurements.
 - σ(300 K) is a Nernst–Einstein Arrhenius extrapolation from 400–1000 K and neglects ion correlations.
 - Amendment A3 was written after the results of the second batch were seen (before the third ran); two fast classes depend on its failed-fit rule. The slow class of Li<sub>2</sub>SiSnS<sub>4</sub> depends on the assumed prefactor (Fig. 5).
 - Universal potentials soften the potential-energy surface and can melt frameworks in simulation; melted temperatures are excluded rather than counted against a composition.
@@ -71,8 +71,8 @@ The classification is rebuilt from the committed run records in seconds; the pub
 
 ## Related projects
 
-Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository Li6PS5Cl-MLIP-Finetune benchmarks two universal potentials against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl and compares a DFT-fine-tuned MACE with its DFT reference; a Li-metal interface project tests the fast conductors next.
+Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository MLIP-fine-tune benchmarks two universal potentials against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl and compares DFT-fine-tuned MACE models with their DFT reference; a Li-metal interface project tests the fast conductors next.
 
 ## License
 
-MIT. Author: Jieao Jia.
+MIT ([LICENSE](LICENSE)). Author: Jieao Jia. The license covers the code and data of this repository. Input structures come from the Materials Project and are subject to its [terms](https://materialsproject.org/about/terms); the MACE-MP-0 and MatterSim model weights are downloaded from their sources under their own licenses.

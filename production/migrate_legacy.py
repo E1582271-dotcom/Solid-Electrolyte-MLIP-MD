@@ -581,7 +581,7 @@ def main(argv=None) -> int:
                     [f"campaigns/{f}/analysis/run.json" for f in DEFINITIVE_CAMPAIGNS],
                     "extracted: analysis code/settings hashes and environment of each definitive campaign"))
 
-    # Li6PS5Cl calibration (companion repository Li6PS5Cl-MLIP-Finetune), cited as three reference values.
+    # Li6PS5Cl calibration (companion repository MLIP-fine-tune), cited as three reference values.
     reference_rows = []
     # Universal potentials only: the fine-tuned model is compared with DFT, not with experiment.
     for rel, model, key in (("data/metrics_prod.json", "MACE-MP-0 small (un-fine-tuned)", "mace"),
@@ -598,7 +598,7 @@ def main(argv=None) -> int:
               ("system", "model", "sigma300_mS_cm", "sigma300_lo_mS_cm", "sigma300_hi_mS_cm", "Ea_eV", "Ea_err_eV",
                "experiment_sintered_mS_cm", "ratio_to_experiment"), reference_rows)
     written.append(("data/references/li6ps5cl_calibration.csv", ["data/metrics_prod.json"],
-                    "extracted: Arrhenius sigma300 and Ea of the Li6PS5Cl benchmark (Li6PS5Cl-MLIP-Finetune)"))
+                    "extracted: Arrhenius sigma300 and Ea of the Li6PS5Cl benchmark (MLIP-fine-tune)"))
 
     (REPO / "docs").mkdir(exist_ok=True)
     shutil.copyfile(legacy.path("docs/CLASSIFICATION_PROTOCOL.md"), REPO / "docs" / "CLASSIFICATION_PROTOCOL.md")
