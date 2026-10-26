@@ -71,7 +71,7 @@ The classification is rebuilt from the committed run records in seconds; the pub
 
 ## Related projects
 
-Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository Li6PS5Cl-MLIP-Finetune benchmarks two universal potentials and a DFT-fine-tuned MACE against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl; a Li-metal interface project tests the fast conductors next.
+Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository Li6PS5Cl-MLIP-Finetune benchmarks two universal potentials against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl and compares a DFT-fine-tuned MACE with its DFT reference; a Li-metal interface project tests the fast conductors next.
 
 ## License
 
