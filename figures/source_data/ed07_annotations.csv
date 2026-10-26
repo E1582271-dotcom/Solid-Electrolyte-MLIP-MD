@@ -1,0 +1,7 @@
+p1_rank,formula,decision,seeds_used,seed_excluded,final_class
+6,Li7PS6,pass,0;1;2,,FAST_VALIDATED
+26,Li5SbS3I2,method_pending,0;1;2,,SLOW_MEASURED
+29,Li4Re6S11,pass_seeds01,0;1,2,FAST_VALIDATED
+44,Li4TiS4,pass_low_sigma,0;1;2,,FAST_VALIDATED
+52,Li3BiS3,method_pending,0;1;2,,SLOW_MEASURED
+59,Li5B7S13,pass,0;1;2,,FAST_VALIDATED

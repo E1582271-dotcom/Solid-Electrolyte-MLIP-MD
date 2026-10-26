@@ -1,0 +1,11 @@
+step,stage,count,unit,note,upstream_project1
+1,mp_li_entries,21712,MP entries,Li-containing,True
+2,mp_funnel,248,MP entries,"sulfide, stable, insulating",True
+3,candidate_structures,79,structures,P1 candidates,True
+4,queue,62,compositions,one structure each,True
+5,census,186,trajectories,"600–1000 K, seed 0",False
+6,census_leads,6,compositions,conditional or review,False
+7,replicates,36,trajectories,"seeds 1–2, leads only",False
+8,definitive,98,trajectories,"400–1000 K, 200–800 ps",False
+9,classified,62,compositions,one class each,False
+10,fast_conductors,11,compositions,σ(300 K) ≥ 0.1 mS cm^-1,False

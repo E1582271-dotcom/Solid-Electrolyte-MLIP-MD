@@ -1,0 +1,10 @@
+formula,class,decided_by,seeds,sigma300_mS_cm,sigma300_ci95_lo_mS_cm,sigma300_ci95_hi_mS_cm,contains_threshold,qualifiers
+Li20Si3P3S23Cl,FAST_VALIDATED,replicate_rule,0;1;2,24.0642,15.468,37.4375,False,
+Li48P16S61,FAST_VALIDATED,terminal_rule,0;1;2;3;4,17.0839,9.99203,29.2092,False,
+Li10Zn7(PS4)8,FAST_VALIDATED,terminal_rule,0;1;2;3;4,10.3469,3.89406,27.4929,False,a32_dependent
+Li9Nd2(PS4)5,FAST_VALIDATED,replicate_rule,0;1;2,2.36063,1.12115,4.97041,False,
+Li3NbS4,FAST_VALIDATED,replicate_rule,0;1;2,2.00975,0.961912,4.19903,False,
+Li6AsS5I,FAST_VALIDATED,terminal_rule,0;1;2;3;4,0.574047,0.0419904,7.84775,True,near_threshold
+Li5P(S2Cl)2,FAST_VALIDATED,replicate_rule,0;1;2;3;4,0.51816,0.251779,1.06637,False,a32_dependent
+Li3BiS3,SLOW_MEASURED,terminal_rule,0;1;2;3;4,0.0899204,0.0442452,0.182747,True,near_threshold
+Li5SbS3I2,SLOW_MEASURED,terminal_rule,0;1;2;3;4,0.00329478,0.00101506,0.0106945,False,

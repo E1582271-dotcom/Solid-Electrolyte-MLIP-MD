@@ -1,0 +1,25 @@
+census_group,census_category,census_screen_label,final_class,n_compositions,group_total,share_percent
+Lead (conditional),lead,conditional,FAST_VALIDATED,4,5,80
+Lead (conditional),lead,conditional,SLOW_MEASURED,1,5,20
+Lead (conditional),lead,conditional,SLOW_ESTIMATED,0,5,0
+Lead (conditional),lead,conditional,SLOW_BOUNDED,0,5,0
+Lead (review),lead,review,FAST_VALIDATED,0,1,0
+Lead (review),lead,review,SLOW_MEASURED,1,1,100
+Lead (review),lead,review,SLOW_ESTIMATED,0,1,0
+Lead (review),lead,review,SLOW_BOUNDED,0,1,0
+Unresolved diffusion,unresolved_diffusion,,FAST_VALIDATED,0,36,0
+Unresolved diffusion,unresolved_diffusion,,SLOW_MEASURED,0,36,0
+Unresolved diffusion,unresolved_diffusion,,SLOW_ESTIMATED,0,36,0
+Unresolved diffusion,unresolved_diffusion,,SLOW_BOUNDED,36,36,100
+Framework melting,framework_melting,,FAST_VALIDATED,7,10,70
+Framework melting,framework_melting,,SLOW_MEASURED,0,10,0
+Framework melting,framework_melting,,SLOW_ESTIMATED,1,10,10
+Framework melting,framework_melting,,SLOW_BOUNDED,2,10,20
+Unresolved + melting,both,,FAST_VALIDATED,0,3,0
+Unresolved + melting,both,,SLOW_MEASURED,0,3,0
+Unresolved + melting,both,,SLOW_ESTIMATED,0,3,0
+Unresolved + melting,both,,SLOW_BOUNDED,3,3,100
+Undetermined at 600 K,undetermined_600K,,FAST_VALIDATED,0,7,0
+Undetermined at 600 K,undetermined_600K,,SLOW_MEASURED,0,7,0
+Undetermined at 600 K,undetermined_600K,,SLOW_ESTIMATED,5,7,71.4286
+Undetermined at 600 K,undetermined_600K,,SLOW_BOUNDED,2,7,28.5714
