@@ -39,7 +39,7 @@ Brackets: pooled 95 % interval of multi-seed fits. † fast only with the failed
 
 ## Limits
 
-- One un-fine-tuned universal potential at the Materials Project volume, one representative structure per composition, one supercell size. On Li<sub>6</sub>PS<sub>5</sub>Cl the same protocol overpredicts σ(300 K) about 1.8× (separate benchmark project); E<sub>a</sub> and the ordering are more reliable than absolute σ. These are model predictions, not measurements.
+- One un-fine-tuned universal potential at the Materials Project volume, one representative structure per composition, one supercell size. On Li<sub>6</sub>PS<sub>5</sub>Cl the same protocol overpredicts σ(300 K) about 1.8×, while MatterSim on the same cell gives 0.11× (companion repository Li6PS5Cl-MLIP-Finetune). Absolute σ therefore depends on the potential, and how the bias varies between compositions has not been measured. These are model predictions, not measurements.
 - σ(300 K) is a Nernst–Einstein Arrhenius extrapolation from 400–1000 K and neglects ion correlations.
 - Amendment A3 was written after the results of the second batch were seen (before the third ran); two fast classes depend on its failed-fit rule. The slow class of Li<sub>2</sub>SiSnS<sub>4</sub> depends on the assumed prefactor (Fig. 5).
 - Universal potentials soften the potential-energy surface and can melt frameworks in simulation; melted temperatures are excluded rather than counted against a composition.
@@ -71,7 +71,7 @@ The classification is rebuilt from the committed run records in seconds; the pub
 
 ## Related projects
 
-Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; a separate benchmark project calibrates universal potentials against DFT and experiment on Li<sub>6</sub>PS<sub>5</sub>Cl; a Li-metal interface project tests the fast conductors next.
+Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository Li6PS5Cl-MLIP-Finetune benchmarks two universal potentials and a DFT-fine-tuned MACE against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl; a Li-metal interface project tests the fast conductors next.
 
 ## License
 

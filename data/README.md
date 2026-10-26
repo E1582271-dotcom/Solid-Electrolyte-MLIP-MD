@@ -13,7 +13,7 @@ Every table here is committed and is the only input of the classification, the f
 | `classification.csv` | 62 | the class of every composition (written by `python -m ssemd classify`) |
 | `classification_summary.json` | | class counts, prefactor and failed-fit audits, input checksums |
 | `workflow.csv` | 13 | counts from 21,712 Materials Project entries to the classes |
-| `references/li6ps5cl_calibration.csv` | 3 | σ(300 K) of Li<sub>6</sub>PS<sub>5</sub>Cl from the separate MLIP benchmark |
+| `references/li6ps5cl_calibration.csv` | 3 | σ(300 K) of Li<sub>6</sub>PS<sub>5</sub>Cl from the companion repository Li6PS5Cl-MLIP-Finetune |
 | `frozen/` | 3 | the published classification, its summary and run records, byte for byte as produced (with `SHA256SUMS`) |
 | `provenance/` | | trajectory checksums, analysis-settings hashes and the map from every file to its original source |
 
