@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+build/
+dist/
+
+# Raw MD output never enters this repository (see docs/data.md)
+*.traj
+*.npy
+*.npz
+*.model
+results/
+site.env

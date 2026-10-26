@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this data or code, please cite it as below."
+title: "MLIP molecular-dynamics screening and definitive classification of 62 Li-S solid-electrolyte compositions"
+authors:
+  - family-names: Jia
+    given-names: Jieao
+version: 1.0.0
+date-released: 2026-10-26
+license: MIT
+keywords:
+  - solid-state electrolyte
+  - machine-learning interatomic potential
+  - molecular dynamics
+  - ionic conductivity
+  - MACE-MP-0

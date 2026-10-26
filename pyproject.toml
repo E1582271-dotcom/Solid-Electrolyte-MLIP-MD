@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssemd"
+version = "1.0.0"
+description = "MLIP molecular-dynamics screening and definitive classification of 62 Li-S solid-electrolyte compositions"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Jieao Jia" }]
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.0", "scipy>=1.13", "pandas>=2.2"]
+
+[project.optional-dependencies]
+figures = ["matplotlib>=3.9"]
+# Reference estimators and the MD runner only; not needed to rebuild tables or figures.
+transport = ["ase>=3.23", "kinisi>=2.0", "scipp>=24.0"]
+dev = ["pytest>=8", "ruff>=0.6", "matplotlib>=3.9"]
+
+[project.scripts]
+ssemd = "ssemd.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["src/ssemd/transport/kinisi_census.py", "production/md_runner"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "E741", "B905"]

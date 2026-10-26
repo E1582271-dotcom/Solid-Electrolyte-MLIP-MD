@@ -1,0 +1,7 @@
+# Exact versions that produced the committed tables and figures (Python 3.11).
+# pip install -r requirements-lock.txt && pip install -e . --no-deps
+numpy==2.4.6
+scipy==1.17.1
+pandas==3.0.3
+matplotlib==3.11.0
+pytest==9.1.1
