@@ -38,11 +38,18 @@ def test_svg_text_is_editable_and_english():
 
 
 def test_rebuild_is_deterministic(tmp_path, monkeypatch):
+    """Two builds give identical bytes; with the reference font they also equal the committed file."""
+    from matplotlib import font_manager
+
     from ssemd.figures import style
 
     name = "ed08"
     module, _ = registry.FIGURES[name]
-    original = (paths.FIGURES / "extended" / f"{module}.svg").read_bytes()
-    monkeypatch.setattr(style, "FIGURES", tmp_path)
-    registry.build([name])
-    assert (tmp_path / "extended" / f"{module}.svg").read_bytes() == original
+    builds = []
+    for run in ("first", "second"):
+        monkeypatch.setattr(style, "FIGURES", tmp_path / run)
+        registry.build([name])
+        builds.append((tmp_path / run / "extended" / f"{module}.svg").read_bytes())
+    assert builds[0] == builds[1]
+    if "Arial" in {font.name for font in font_manager.fontManager.ttflist}:
+        assert builds[0] == (paths.FIGURES / "extended" / f"{module}.svg").read_bytes()
