@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from collections import Counter
 
 from ssemd import classify, data, paths
@@ -9,10 +10,23 @@ from ssemd.records import read_csv
 from ssemd.rules import OUTPUT_COLUMNS, to_csv_text
 
 
-def test_legacy_outputs_equal_the_frozen_tables_byte_for_byte():
+def _same_json(ours, frozen) -> bool:
+    """Equal JSON values, keys in the same order; floats may differ in the last bits."""
+    if isinstance(frozen, float):
+        return isinstance(ours, float) and math.isclose(ours, frozen, rel_tol=1e-12)
+    if isinstance(frozen, dict):
+        return list(ours) == list(frozen) and all(_same_json(ours[key], frozen[key]) for key in frozen)
+    if isinstance(frozen, list):
+        return len(ours) == len(frozen) and all(_same_json(a, b) for a, b in zip(ours, frozen))
+    return type(ours) is type(frozen) and ours == frozen
+
+
+def test_legacy_outputs_reproduce_the_frozen_tables():
+    """The table is identical byte for byte; the summary's fitted D0 values depend on the LAPACK build."""
     csv_text, summary_text = classify.legacy_outputs()
     assert csv_text == (paths.FROZEN / "definitive_classification_62.csv").read_text(encoding="utf-8")
-    assert summary_text == (paths.FROZEN / "definitive_classification_62_summary.json").read_text(encoding="utf-8")
+    frozen = (paths.FROZEN / "definitive_classification_62_summary.json").read_text(encoding="utf-8")
+    assert _same_json(json.loads(summary_text), json.loads(frozen))
 
 
 def test_frozen_files_match_their_checksums():

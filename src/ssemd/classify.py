@@ -2,8 +2,11 @@
 
 ``build()`` writes ``data/classification.csv`` (the classifier columns plus four
 presentation columns) and ``data/classification_summary.json``. ``legacy_outputs()``
-reruns the same classification with the legacy file names as data sources; its output
-equals the frozen tables in ``data/frozen/`` byte for byte (tests/test_classification.py).
+reruns the same classification with the legacy file names as data sources; its table
+equals the frozen one in ``data/frozen/`` byte for byte, and its summary equals the frozen
+summary up to the last bits of the fitted D0 values, which depend on the LAPACK build
+(tests/test_classification.py). For the same reason the written summary rounds floats to
+``SUMMARY_DIGITS`` significant figures.
 """
 from __future__ import annotations
 
@@ -28,6 +31,7 @@ from .records import classifier_runs, load_catalog, load_replicate_decisions, lo
 from .rules import OUTPUT_COLUMNS, assert_terminal, classify, summarize, to_csv_text
 
 STAGE = "post-compute"
+SUMMARY_DIGITS = 10
 
 # Inputs recorded by the frozen summary, in the order the legacy classifier listed them.
 LEGACY_INPUTS = (
@@ -127,6 +131,17 @@ def summary_text(summary: Mapping[str, Any]) -> str:
     return json.dumps(summary, indent=2, ensure_ascii=False) + "\n"
 
 
+def rounded(value: Any, digits: int = SUMMARY_DIGITS) -> Any:
+    """``value`` with every float rounded to ``digits`` significant figures (platform-independent output)."""
+    if isinstance(value, float):
+        return float(f"{value:.{digits}g}")
+    if isinstance(value, Mapping):
+        return {key: rounded(item, digits) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [rounded(item, digits) for item in value]
+    return value
+
+
 def legacy_outputs() -> tuple[str, str]:
     """Classification CSV and summary JSON with the legacy data-source names (for the frozen check)."""
     rows, _ = run_classifier(legacy_sources=True)
@@ -144,7 +159,7 @@ def build(require_terminal: bool = True) -> list[dict[str, Any]]:
     CLASSIFICATION.write_text(to_csv_text(rows, OUTPUT_COLUMNS + PRESENTATION_COLUMNS), encoding="utf-8")
     inputs = [(relpath(path), sha256(path)) for path in (RUNS, COMPOSITIONS, LEAD_DECISIONS)]
     summary = summarize(rows, inputs, STAGE, (relpath(PROTOCOL), sha256(PROTOCOL)))
-    CLASSIFICATION_SUMMARY.write_text(summary_text(summary), encoding="utf-8")
+    CLASSIFICATION_SUMMARY.write_text(summary_text(rounded(summary)), encoding="utf-8")
     return rows
 
 

@@ -4,7 +4,7 @@
 
 This repository is a clean rebuild of a working repository in which the simulations were planned, run and analysed between September and October 2026. Results were not recomputed for the rebuild. [production/migrate_legacy.py](../production/migrate_legacy.py) read the committed analysis tables of that repository at commit `e2b7416c4af887fb9101aa444836164f689999a9` (clean working tree), rebuilt the classifier's run records with the original classifier code, and wrote the tables in [data/](../data/). [data/provenance/legacy_files.csv](../data/provenance/legacy_files.csv) maps every file here to the original files it came from, with their sha256.
 
-The classifier of this repository ([src/ssemd/rules.py](../src/ssemd/rules.py)) contains the original rule functions unchanged; only the data loading around them was replaced. Run with the original file names as data sources, it reproduces the published classification table and summary byte for byte ([data/frozen/](../data/frozen/), checked by `tests/test_classification.py`).
+The classifier of this repository ([src/ssemd/rules.py](../src/ssemd/rules.py)) contains the original rule functions unchanged; only the data loading around them was replaced. Run with the original file names as data sources, it reproduces the published classification table byte for byte, and the published summary except for the last bits of the fitted D0 values, which depend on the LAPACK build (relative difference below 1e-12; [data/frozen/](../data/frozen/), checked by `tests/test_classification.py`). The summary this repository writes rounds floats to 10 significant figures so that a rebuild gives the same bytes on any platform.
 
 ## Timeline of the classification protocol
 

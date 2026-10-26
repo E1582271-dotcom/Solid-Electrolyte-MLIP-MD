@@ -52,32 +52,32 @@
   "fitted_D0_cm2_s": {
     "scope": "compositions with >= 2 eligible temperatures (pooled ln D vs 1/T fit over eligible runs)",
     "n": 19,
-    "min": 0.00012314809512980026,
+    "min": 0.0001231480951,
     "min_formula": "Li6AsS5I",
-    "median": 0.005224752896378432,
-    "max": 0.03736460493122486,
+    "median": 0.005224752896,
+    "max": 0.03736460493,
     "below_D0_min": [],
     "below_D0_min_sensitivity": [],
     "by_composition": {
-      "Li6AsS5I": 0.00012314809512980026,
-      "Li4Re6S11": 0.00020697196160543687,
-      "Li7PS6": 0.00041582339604445364,
-      "Li5B7S13": 0.0004597225015262527,
-      "Li20Si3P3S23Cl": 0.0004726238065823456,
-      "Li10Zn7(PS4)8": 0.0006177029988394361,
-      "Li9Nd2(PS4)5": 0.0021237933305104212,
-      "Li4TiS4": 0.0026849229972149935,
-      "Li3BiS3": 0.003097901674444691,
-      "Li48P16S61": 0.005224752896378432,
-      "Li9S3N": 0.005672286674890496,
-      "Li2Ga2GeS6": 0.007674063667378807,
-      "Li8TiS6": 0.00938390752509727,
-      "Li3NbS4": 0.019598332796520408,
-      "Li2B2S5": 0.020037669855330217,
-      "Li5SbS3I2": 0.02188375053036558,
-      "Li3BS3": 0.02318918364733645,
-      "Li5P(S2Cl)2": 0.035070064217337465,
-      "LiAl(PS3)2": 0.03736460493122486
+      "Li6AsS5I": 0.0001231480951,
+      "Li4Re6S11": 0.0002069719616,
+      "Li7PS6": 0.000415823396,
+      "Li5B7S13": 0.0004597225015,
+      "Li20Si3P3S23Cl": 0.0004726238066,
+      "Li10Zn7(PS4)8": 0.0006177029988,
+      "Li9Nd2(PS4)5": 0.002123793331,
+      "Li4TiS4": 0.002684922997,
+      "Li3BiS3": 0.003097901674,
+      "Li48P16S61": 0.005224752896,
+      "Li9S3N": 0.005672286675,
+      "Li2Ga2GeS6": 0.007674063667,
+      "Li8TiS6": 0.009383907525,
+      "Li3NbS4": 0.0195983328,
+      "Li2B2S5": 0.02003766986,
+      "Li5SbS3I2": 0.02188375053,
+      "Li3BS3": 0.02318918365,
+      "Li5P(S2Cl)2": 0.03507006422,
+      "LiAl(PS3)2": 0.03736460493
     }
   },
   "sensitivity_D0min_1e-5": {
@@ -86,14 +86,14 @@
       "prefactor": 36,
       "pair": 7
     },
-    "max_slow_bounded_sigma300_upper_bound_mS_cm": 0.08247471346356126,
-    "max_slow_bounded_sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744738502325,
+    "max_slow_bounded_sigma300_upper_bound_mS_cm": 0.08247471346,
+    "max_slow_bounded_sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744739,
     "n_unchanged": 42,
     "verdict_changes": [
       {
         "formula": "Li2SiSnS4",
         "class_at_1e-5": "NEEDS_COMPUTE",
-        "sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744738502325
+        "sigma300_upper_bound_at_1e-5_mS_cm": 0.5474744739
       }
     ]
   },
