@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check src tests production
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-lock.txt && pip install -e . --no-deps
+      - run: python -m pytest
+
+  rebuild:
+    # Tables and documents are rebuilt from data/ and must not change. Figures are checked
+    # through their source-data tables (font rendering differs between machines).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: sudo apt-get update && sudo apt-get install -y fonts-liberation
+      - run: pip install -r requirements-lock.txt && pip install -e . --no-deps
+      - run: python -m ssemd all
+      - run: git diff --exit-code -- data docs figures/source_data
+
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-lock.txt && pip install -e . --no-deps
+      - run: python -m ssemd check-repo
