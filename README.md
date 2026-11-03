@@ -71,7 +71,12 @@ The classification is rebuilt from the committed run records in seconds; the pub
 
 ## Related projects
 
-Part of a computational portfolio on sulfide solid electrolytes: Project 1 screens the Materials Project and hands over the 62-composition queue; the companion repository MLIP-fine-tune benchmarks two universal potentials against experiment on Li<sub>6</sub>PS<sub>5</sub>Cl and compares DFT-fine-tuned MACE models with their DFT reference; a Li-metal interface project tests the fast conductors next.
+Part of a computational portfolio on sulfide solid electrolytes:
+
+- **Solid-Electrolyte-Screening** screens all 21,712 Li-containing Materials Project entries down to 62 candidate Li–S compositions.
+- **Solid-Electrolyte-Inverse-Design** generates Li–P–S structures outside the Materials Project with MatterGen (43 stable, unique and novel; not yet simulated).
+- **MLIP-fine-tune** compares universal and DFT-fine-tuned potentials with DFT and AIMD for Li transport in Li<sub>6</sub>PS<sub>5</sub>Cl.
+- **MACE-Envtok** is a from-scratch implementation of MACE, trained with multi-node DDP on the EnvTok subset of OMat24.
 
 ## License
 
